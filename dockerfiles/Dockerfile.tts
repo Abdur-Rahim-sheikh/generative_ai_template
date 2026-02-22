@@ -11,13 +11,14 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 WORKDIR /app
 
 RUN uv pip install --system \
-    torch \
-    torchaudio \
     fastapi[standard] \
-    coqui-tts[bn,ja,zh,codec] \
-    pydub \
-    python-iso639 \
-    pedalboard
+    coqui-tts==0.26.2 \
+    transformers==4.48.3 \
+    torch==2.4.1 \
+    torchaudio==2.4.1 \
+    pydub==0.25.1 \
+    python-iso639==2026.1.31 \
+    pedalboard==0.9.22
 
 # RUN pip install --no-cache-dir fastapi[standard] coqui-tts pydub
 
