@@ -1,0 +1,19 @@
+services:
+  comfy:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.comfy
+    ports:
+      - "8003:8188"
+    runtime: nvidia
+    volumes:
+      - "/tmp/comfyui/temp:/app/ComfyUI/temp"
+      - "/tmp/comfyui/output:/app/ComfyUI/output"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

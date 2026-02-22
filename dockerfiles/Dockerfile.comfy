@@ -1,0 +1,63 @@
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y git wget build-essential && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip uv
+
+RUN git clone https://github.com/Abdur-Rahim-sheikh/ComfyUI.git
+
+WORKDIR /app/ComfyUI/custom_nodes
+RUN git clone https://github.com/Comfy-Org/ComfyUI-Manager.git
+RUN git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git
+RUN git clone https://github.com/cubiq/ComfyUI_essentials.git
+
+RUN for d in */ ; do \
+    if [ -f "$d/requirements.txt" ]; then \
+        uv pip install --prefix=/packages -r "$d/requirements.txt"; \
+    fi \
+done
+
+WORKDIR /app/ComfyUI
+# added insightface to test purpose only
+RUN uv pip install --prefix=/packages -r requirements.txt onnxruntime-gpu insightface
+
+
+# model stage
+FROM python:3.11-slim AS models
+RUN apt-get update && apt-get install -y wget
+WORKDIR /app/ComfyUI/models
+
+COPY --from=base /app/ComfyUI/models .
+
+# ARG if any
+RUN wget https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors -O checkpoints/flux1-dev-fp8.safetensors && \
+    wget https://huggingface.co/Comfy-Org/USO_1.0_Repackaged/resolve/main/split_files/loras/uso-flux1-dit-lora-v1.safetensors -O loras/uso-flux1-dit-lora-v1.safetensors && \
+    wget https://huggingface.co/XLabs-AI/flux-lora-collection/resolve/main/realism_lora.safetensors -O loras/realism_lora.safetensors
+
+FROM python:3.11-slim
+
+WORKDIR /app/ComfyUI
+
+RUN apt-get update && apt-get install -y \
+    git \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgl1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=base /packages /usr/local
+
+
+COPY --from=base /app/ComfyUI /app/ComfyUI
+
+
+COPY --from=models /app/ComfyUI/models /app/ComfyUI/models
+
+EXPOSE 8188
+
+CMD ["python", "main.py", "--listen", "0.0.0.0", "--port", "8188"]

@@ -1,0 +1,24 @@
+FROM python:3.12.12-slim
+
+
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+ENV PYTHONPATH=/app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked
+
+COPY . ./
+# obfuscation steps
+RUN pip install pyarmor
+RUN pyarmor gen --recursive --output dist app/
+RUN cp -r dist/* . && rm -rf dist
+# end obfuscation
+
+EXPOSE 8000
+
+CMD ["uv", "run", "python","-m", "app.main"]
