@@ -92,7 +92,6 @@ async def generate_tts(request: ScriptRequest):
         raise HTTPException(status_code=400, detail=msg)
 
     headers = {
-        "X-Premium": str(request.premium),
         "X-Enhanced-Text": str(request.enhance_text),
         "Content-Length": str(len(audio)),
         "Content-Disposition": 'attachment; filename="output.mp3"',
