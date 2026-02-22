@@ -39,7 +39,7 @@ class PromptAndImageToImageRequest(PromptAndImageToImage):
         x = int(self.ratio.split(":")[0])
         if x == 1:
             return 1024
-        multiplier = 512 if self.premium else 256
+        multiplier = 512
         return x * multiplier
 
     @computed_field
@@ -48,7 +48,7 @@ class PromptAndImageToImageRequest(PromptAndImageToImage):
         x = int(self.ratio.split(":")[-1])
         if x == 1:
             return 1024
-        multiplier = 512 if self.premium else 256
+        multiplier = 512
         return x * multiplier
 
 
@@ -61,7 +61,7 @@ class PromptToImageRequest(PromptToImage):
         x = int(self.ratio.split(":")[0])
         if x == 1:
             return 1024
-        multiplier = 512 if self.premium else 256
+        multiplier = 512
         return x * multiplier
 
     @computed_field
@@ -70,5 +70,5 @@ class PromptToImageRequest(PromptToImage):
         x = int(self.ratio.split(":")[-1])
         if x == 1:
             return 1024
-        multiplier = 512 if self.premium else 256
+        multiplier = 512
         return x * multiplier

@@ -62,7 +62,7 @@ async def generate_script(request: ChatRequest) -> ChatResponse:
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"llm is down premium={request.premium}",
+            detail="llm is down",
         )
 
 
@@ -88,7 +88,7 @@ async def generate_tts(request: ScriptRequest):
     try:
         audio = await current_tts_service.generate_tts(segments=request.segments)
     except Exception as e:
-        msg = f"for {'premium' if request.premium else 'non-premimum'} service {e}"
+        msg = f"service {e}"
         raise HTTPException(status_code=400, detail=msg)
 
     headers = {
