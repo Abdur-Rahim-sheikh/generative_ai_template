@@ -43,3 +43,11 @@ R --> E[ComfyUI Image Generation]
 - Clean service abstractions
 - Isolating services
 - Easy horizontal scaling
+
+## Generated Sample
+
+Here is a image generated via ComfyUI of my cup,<br>
+
+<p align="center">
+<img src="reference_cup.png" alt="A reference cup placed on a mountain" width="400" height="400"/>
+</p>
