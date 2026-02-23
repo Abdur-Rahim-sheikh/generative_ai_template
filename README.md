@@ -21,7 +21,6 @@ The template is purposefully kept (100% Free) opensource dependent, so premium a
 
 This repo is designed to be:
 
-- A portfolio showcase
 - A production-ready starter template
 - A foundation for SaaS AI systems
 
