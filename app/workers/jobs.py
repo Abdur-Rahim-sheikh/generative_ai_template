@@ -36,6 +36,7 @@ async def product_photography(
         uploaded_img_name = await client.upload_image(
             image_bytes=reference_image, file_name=image_name
         )
+        app_logger.debug("Image uploaded")
         workflow = generator.get_product_image_workflow(
             reference_image_name=uploaded_img_name,
             prompt=prompt,
@@ -44,5 +45,6 @@ async def product_photography(
             batch=batch,
         )
         images = await client.generate_image(workflow=workflow)
+        app_logger.debug("Image generated")
         # currently return only one due to business reason
         return images
