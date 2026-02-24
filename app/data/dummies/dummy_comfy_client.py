@@ -1,12 +1,14 @@
 import asyncio
 import uuid
 
-
 from ...config import app_logger
 from ...schemas.comfy import ComfyStatus
 
 
 class DummyComfyClient:
+    def __init__(self, *args):
+        pass
+
     async def __aenter__(self):
         await asyncio.sleep(0.5)
         return self

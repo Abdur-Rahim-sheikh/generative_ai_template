@@ -5,21 +5,27 @@ from fastapi.responses import Response
 
 from ..config import app_logger, settings
 from ..data import CoquiTTS, OllamaLLM
+from ..data.dummies import DummyLLM, DummyTTS
 from ..schemas.chat import ChatRequest, ChatResponse
 from ..schemas.script import ScriptRequest
 from ..services import ChatService, TTSService
 
+dummy_llm = DummyLLM()
 ollama_llm = OllamaLLM(host=settings.OLLAMA_HOST, model=settings.OLLAMA_MODEL)
+llm = dummy_llm if settings.USE_DUMMY_SERVICES else ollama_llm
 
+
+dummy_tts = DummyTTS()
 coqui_tts = CoquiTTS(host=settings.COQUI_HOST, port=settings.COQUI_PORT)
+tts = dummy_llm if settings.USE_DUMMY_SERVICES else coqui_tts
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await ollama_llm.prepare()
+    await llm.prepare()
     app_logger.info("ollama prepared")
 
-    await coqui_tts.load_essentials()
+    await tts.load_essentials()
     app_logger.info("coqui tts prepared")
 
     yield
@@ -27,9 +33,9 @@ async def lifespan(app: FastAPI):
 
 router = APIRouter(lifespan=lifespan)
 
-chat_service_ollama = ChatService(llm=ollama_llm)
+chat_service_ollama = ChatService(llm=llm)
 
-tts_service_coqui = TTSService(tts=coqui_tts)
+tts_service_coqui = TTSService(tts=tts)
 
 
 @router.post("/generate-script")

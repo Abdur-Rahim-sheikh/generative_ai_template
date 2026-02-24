@@ -4,6 +4,7 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
     DEBUG: bool = True
+    USE_DUMMY_SERVICES: bool = True
 
     # llm config
     OLLAMA_MODEL: str = "phi4-mini:3.8b"

@@ -2,15 +2,16 @@ import uuid
 
 from ..config import app_logger, settings
 from ..data import ComfyClient
+from ..data.dummies import DummyComfyClient
 from ..services import WorkflowGenerator
 
 generator = WorkflowGenerator()
+Client = DummyComfyClient if settings.USE_DUMMY_SERVICES else ComfyClient
 
 
 async def realistic_image(
     ctx, prompt: str, width: int, height: int, batch: int = 1
 ) -> bytes:
-
     app_logger.debug(msg=f"enhanced: {prompt=}")
     async with ComfyClient(
         host=settings.COMFY_HOST, port=settings.COMFY_PORT
