@@ -13,9 +13,7 @@ async def realistic_image(
     ctx, prompt: str, width: int, height: int, batch: int = 1
 ) -> bytes:
     app_logger.debug(msg=f"enhanced: {prompt=}")
-    async with ComfyClient(
-        host=settings.COMFY_HOST, port=settings.COMFY_PORT
-    ) as client:
+    async with Client(host=settings.COMFY_HOST, port=settings.COMFY_PORT) as client:
         workflow = generator.get_realistic_image_workflow(
             prompt=prompt, width=width, height=height, batch=batch
         )
@@ -34,9 +32,7 @@ async def product_photography(
 ) -> bytes:
     image_name = uuid.uuid4().hex[:16]
 
-    async with ComfyClient(
-        host=settings.COMFY_HOST, port=settings.COMFY_PORT
-    ) as client:
+    async with Client(host=settings.COMFY_HOST, port=settings.COMFY_PORT) as client:
         uploaded_img_name = await client.upload_image(
             image_bytes=reference_image, file_name=image_name
         )
