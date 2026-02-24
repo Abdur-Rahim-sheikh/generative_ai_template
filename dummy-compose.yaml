@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    ports:
+      - 8000:8000
+    develop:
+      watch:
+        - path: ./app
+          action: sync
+          target: /app/app
+    depends_on:
+      tts:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+  worker:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    develop:
+      watch:
+        - path: ./app
+          action: restart
+          target: /app/app
+    command: ["/app/.venv/bin/arq", "app.workers.setup.WorkerSettings"]

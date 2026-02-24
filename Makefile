@@ -9,14 +9,14 @@ start: build run
 clear:
 	docker compose down --remove-orphans
 
-milestone-build:
-	docker compose -f docker-compose-milestone.yml build
+dummy-build:
+	docker compose -f dummy-compose.yaml build
 
-milestone-start:
-	docker compose -f docker-compose-milestone.yml up -d
+dummy-start:
+	docker compose -f dummy-compose.yaml up -d
 
-milestone-clear:
-	docker compose -f docker-compose.milestone.yml down --remove-orphans
+dummy-clear:
+	docker compose -f dummy-compose.yaml down --remove-orphans
 
 
 # temporary
