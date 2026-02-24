@@ -17,7 +17,7 @@ llm = dummy_llm if settings.USE_DUMMY_SERVICES else ollama_llm
 
 dummy_tts = DummyTTS()
 coqui_tts = CoquiTTS(host=settings.COQUI_HOST, port=settings.COQUI_PORT)
-tts = dummy_llm if settings.USE_DUMMY_SERVICES else coqui_tts
+tts = dummy_tts if settings.USE_DUMMY_SERVICES else coqui_tts
 
 
 @asynccontextmanager
