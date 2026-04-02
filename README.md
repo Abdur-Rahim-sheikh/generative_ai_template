@@ -43,6 +43,11 @@ R --> E[ComfyUI Image Generation]
 - Isolating services
 - Easy horizontal scaling
 
+## Future Plans
+
+Developing a generative AI platform is easy nowadays. But we need to maintain is though.
+So I am planning to add test cases using pydantic suits.
+
 ## Generated Sample
 
 Here is a image generated via ComfyUI of my cup,<br>
