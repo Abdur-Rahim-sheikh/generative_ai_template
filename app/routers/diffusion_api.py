@@ -56,13 +56,13 @@ async def get_status(job_id: str, queue: ArqRedis = Depends(get_job_queue)):
         raise HTTPException(status_code=400, detail="Job id is invalid")
 
     message = f"Job is in {status.value} state"
-    result = None
+    results = None
     if status == JobStatus.complete:
         result_info = await job.result_info()
         message = "Something went wrong during processing"
         if result_info.success:
             message = "Image processed successfully"
             results = result_info.results
-            watermarked_results = [auto_watermark(r) for r in results]
+            results = [auto_watermark(r) for r in results]
 
-    return StatusResponse(status=status, message=message, results=watermarked_results)
+    return StatusResponse(status=status, message=message, results=results)
