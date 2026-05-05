@@ -6,6 +6,7 @@ from ..dependencies import get_job_queue
 from ..schemas.common import JobResponse, StatusResponse
 from ..schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
 from ..utils.image import decode_base64_to_bytes
+from ..utils.watermark import auto_watermark
 
 router = APIRouter()
 
@@ -61,6 +62,7 @@ async def get_status(job_id: str, queue: ArqRedis = Depends(get_job_queue)):
         message = "Something went wrong during processing"
         if result_info.success:
             message = "Image processed successfully"
-            result = result_info.result
+            results = result_info.results
+            watermarked_results = [auto_watermark(r) for r in results]
 
-    return StatusResponse(status=status, message=message, results=result)
+    return StatusResponse(status=status, message=message, results=watermarked_results)
