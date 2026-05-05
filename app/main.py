@@ -21,8 +21,8 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    title="Cortex",
-    summary="The AI backbone of the whole project",
+    title="Generative AI Template",
+    summary="The Template of AI backbone",
     openapi_url="/openapi.json" if settings.DEBUG else None,
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
