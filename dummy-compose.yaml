@@ -10,7 +10,10 @@ services:
         - path: ./app
           action: sync
           target: /app/app
-    restart: on-failure:3
+        - path: ./pyproject.toml
+          action: rebuild
+          target: /app/pyproject.toml
+    restart: on-failure
 
   worker:
     build:

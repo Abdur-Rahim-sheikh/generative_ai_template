@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     COQUI_PORT: str = "8020"
 
     # db config
+    DB_HOST: str | None = None
+    DB_PORT: int | None = None
+    DB_USER: str = "postgres"
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_DB: int
