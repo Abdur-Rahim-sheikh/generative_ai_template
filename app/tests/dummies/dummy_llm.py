@@ -17,10 +17,9 @@ class DummyLLM(BaseLLM):
         return response
 
     async def formatted_ask(
-        self, text: str, output_format: BaseModel, instruction: str = ""
+        self, text: str, output_format: type[BaseModel], instruction: str = ""
     ) -> BaseModel:
         app_logger.debug(f"{text=}, {instruction=}")
-        response = output_format.model_json_schema()
-
-        output = output_format.model_validate_json(response)
-        return output
+        data = output_format.model_construct()
+        # changes
+        return data

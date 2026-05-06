@@ -10,6 +10,7 @@ services:
         - path: ./app
           action: sync
           target: /app/app
+    restart: on-failure:3
 
   worker:
     build:
@@ -20,6 +21,8 @@ services:
         - path: ./app
           action: restart
           target: /app/app
+    restart: on-failure:3
+
     command: ["/app/.venv/bin/arq", "app.workers.setup.WorkerSettings"]
 
   redis:
