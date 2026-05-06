@@ -1,6 +1,6 @@
 from arq.connections import RedisSettings
 from .jobs import realistic_image, product_photography
-from ..config import settings
+from ...config import settings
 
 REDIS_SETTINGS = RedisSettings(
     host=settings.REDIS_HOST,

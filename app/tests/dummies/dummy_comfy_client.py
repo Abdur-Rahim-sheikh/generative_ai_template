@@ -6,7 +6,7 @@ from ...schemas.comfy import ComfyStatus
 
 
 class DummyComfyClient:
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         pass
 
     async def __aenter__(self):

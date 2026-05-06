@@ -5,10 +5,10 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from .config import app_logger, settings
-from .routers.admin_portal import router as adminRouter
-from .routers.diffusion_api import router as diffusionRouter
-from .routers.llm_api import router as llmRouter
-from .workers import REDIS_SETTINGS
+from .entrypoints.api.admin_portal import router as adminRouter
+from .entrypoints.api.diffusion_api import router as diffusionRouter
+from .entrypoints.api.llm_api import router as llmRouter
+from .entrypoints.workers import REDIS_SETTINGS
 
 
 @asynccontextmanager

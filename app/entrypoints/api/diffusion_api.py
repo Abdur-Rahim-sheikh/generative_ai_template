@@ -2,11 +2,11 @@ from arq.connections import ArqRedis
 from arq.jobs import Job, JobStatus
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..dependencies import get_job_queue
-from ..schemas.common import JobResponse, StatusResponse
-from ..schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
-from ..utils.image import decode_base64_to_bytes
-from ..utils.watermark import auto_watermark
+from ...dependencies import get_job_queue
+from ...schemas.common import JobResponse, StatusResponse
+from ...schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
+from ...utils.image import decode_base64_to_bytes
+from ...utils.watermark import auto_watermark
 
 router = APIRouter()
 

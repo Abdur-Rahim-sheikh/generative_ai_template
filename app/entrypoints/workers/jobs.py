@@ -1,9 +1,9 @@
 import uuid
 
-from ..config import app_logger, settings
-from ..data import ComfyClient
-from ..tests.dummies import DummyComfyClient
-from ..services import WorkflowGenerator
+from ...config import app_logger, settings
+from ...data import ComfyClient
+from ...tests.dummies import DummyComfyClient
+from ...services import WorkflowGenerator
 
 generator = WorkflowGenerator()
 Client = DummyComfyClient if settings.USE_DUMMY_SERVICES else ComfyClient

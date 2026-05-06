@@ -23,7 +23,8 @@ services:
           target: /app/app
     restart: on-failure:3
 
-    command: ["/app/.venv/bin/arq", "app.workers.setup.WorkerSettings"]
+    command:
+      ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
 
   redis:
     image: redis:latest

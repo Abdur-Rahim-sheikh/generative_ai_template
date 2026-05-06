@@ -3,12 +3,12 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, HTTPException, status
 from fastapi.responses import Response
 
-from ..config import app_logger, settings
-from ..data import CoquiTTS, OllamaLLM
-from ..tests.dummies import DummyLLM, DummyTTS
-from ..schemas.chat import ChatRequest, ChatResponse
-from ..schemas.script import ScriptRequest
-from ..services import ChatService, TTSService
+from ...config import app_logger, settings
+from ...data import CoquiTTS, OllamaLLM
+from ...tests.dummies import DummyLLM, DummyTTS
+from ...schemas.chat import ChatRequest, ChatResponse
+from ...schemas.script import ScriptRequest
+from ...services import ChatService, TTSService
 
 dummy_llm = DummyLLM()
 ollama_llm = OllamaLLM(host=settings.OLLAMA_HOST, model=settings.OLLAMA_MODEL)
