@@ -16,4 +16,4 @@ wheels/
 .env
 
 # resources
-resources
+resources/workflows

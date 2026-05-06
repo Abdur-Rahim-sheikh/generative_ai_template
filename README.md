@@ -53,7 +53,7 @@ So I am planning to add test cases using pydantic suits.
 Here is a image generated via ComfyUI of my cup,<br>
 
 <p align="center">
-<img src="reference_cup.png" alt="A reference cup placed on a mountain" width="400" height="400"/>
+<img src="resources/images/reference_cup.png" alt="A reference cup placed on a mountain" width="400" height="400"/>
 </p>
 
 By the way, if you feel the need to get my workflow, feel free to mail me at `abi.rahim.sheikh@gmail.com`
