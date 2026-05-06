@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from pydantic import EmailStr
+from pydantic import EmailStr, property
 from sqlmodel import Field, SQLModel, String
 
 TimeStamp = Annotated[
@@ -19,6 +19,10 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
     created_at: TimeStamp
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
 
 
 class Product(SQLModel, table=True):
