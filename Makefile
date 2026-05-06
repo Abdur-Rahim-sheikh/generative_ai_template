@@ -15,7 +15,7 @@ dummy-build:
 dummy-start:
 	docker compose -f dummy-compose.yaml up -d
 dummy-watch:
-	docker compose -f dummy-compose.yaml watch 
+	docker compose -f dummy-compose.yaml up --watch 
 dummy-clear:
 	docker compose -f dummy-compose.yaml down --remove-orphans
 
