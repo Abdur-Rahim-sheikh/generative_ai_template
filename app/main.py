@@ -9,7 +9,7 @@ from .entrypoints.api.admin_portal import router as adminRouter
 from .entrypoints.api.diffusion_api import router as diffusionRouter
 from .entrypoints.api.llm_api import router as llmRouter
 from .entrypoints.workers import REDIS_SETTINGS
-from .database import init_db, drop_db
+from .config.connections import init_db, drop_db
 
 
 @asynccontextmanager

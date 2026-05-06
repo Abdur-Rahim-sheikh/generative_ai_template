@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from pydantic import EmailStr, property
+from pydantic import EmailStr
 from sqlmodel import Field, SQLModel, String
 
 TimeStamp = Annotated[
