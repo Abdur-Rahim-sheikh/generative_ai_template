@@ -2,7 +2,7 @@ import uuid
 
 from ..config import app_logger, settings
 from ..data import ComfyClient
-from ..data.dummies import DummyComfyClient
+from ..tests.dummies import DummyComfyClient
 from ..services import WorkflowGenerator
 
 generator = WorkflowGenerator()

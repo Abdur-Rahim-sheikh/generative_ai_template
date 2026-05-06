@@ -5,7 +5,7 @@ from fastapi.responses import Response
 
 from ..config import app_logger, settings
 from ..data import CoquiTTS, OllamaLLM
-from ..data.dummies import DummyLLM, DummyTTS
+from ..tests.dummies import DummyLLM, DummyTTS
 from ..schemas.chat import ChatRequest, ChatResponse
 from ..schemas.script import ScriptRequest
 from ..services import ChatService, TTSService
