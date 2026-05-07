@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
-from ...dependencies.services import get_user_service
+from ...dependencies.database_services import get_user_service
 from ...schemas.user import CreateUserRequest
 from ...domain import User
 from ...config import app_logger
