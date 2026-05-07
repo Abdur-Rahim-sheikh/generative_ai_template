@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
     id: PrimaryKey
     first_name: str
     last_name: str
-    email: EmailStr
+    email: EmailStr = Field(unique=True)
     hashed_password: str
     is_active: bool = True
     created_at: TimeStamp

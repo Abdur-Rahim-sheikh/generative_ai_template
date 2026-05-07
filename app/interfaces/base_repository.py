@@ -1,43 +1,54 @@
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+from uuid import UUID
+
+from sqlmodel import Session as SQLModelSession
+
+from ..domain import Session, Transaction, User, Wallet, Product
+
+T = TypeVar("T")
 
 
-class BaseRepository(ABC):
+class BaseRepository(Generic[T], ABC):
+    def __init__(self, session: SQLModelSession):
+        self.session = session
+
     @abstractmethod
-    def save(self, data):
+    async def save(self, data: T) -> T:
         pass
 
     @abstractmethod
-    def get(self, id):
+    async def get(self, id: UUID) -> T:
         pass
 
     @abstractmethod
-    def delete(self, id):
+    async def delete(self, id: UUID) -> None:
         pass
 
 
-class BaseUserRepository(BaseRepository):
+class BaseUserRepository(BaseRepository[User]):
     @abstractmethod
-    def get_by_email(self, email: str):
+    async def get_by_email(self, email: str) -> User:
         pass
 
 
-class BaseProductRepository(BaseRepository):
+class BaseProductRepository(BaseRepository[Product]):
     pass
 
 
-class BaseWalletRepository(BaseRepository):
+class BaseWalletRepository(BaseRepository[Wallet]):
     @abstractmethod
-    def get_by_user_id(self, user_id):
+    async def get_by_user_id(self, user_id: UUID) -> Wallet:
         pass
 
 
-class BaseTransactionRepository(BaseRepository):
+class BaseTransactionRepository(BaseRepository[Transaction]):
     @abstractmethod
-    def get_by_wallet_id(self, wallet_id):
+    async def get_by_wallet_id(self, wallet_id: UUID) -> list[Transaction]:
         pass
 
 
-class BaseSessionRepository(BaseRepository):
+class BaseSessionRepository(BaseRepository[Session]):
     @abstractmethod
-    def get_by_user_id(self, user_id):
+    async def get_by_user_id(self, user_id: UUID) -> Session:
         pass

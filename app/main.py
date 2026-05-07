@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from .config import app_logger, settings
 from .entrypoints.api.admin_portal import router as adminRouter
 from .entrypoints.api.diffusion_api import router as diffusionRouter
+from .entrypoints.api.db_operations import router as dbOperationsRouter
 from .entrypoints.api.llm_api import router as llmRouter
 from .entrypoints.workers import REDIS_SETTINGS
 from .config.connections import init_db, drop_db
@@ -36,6 +37,7 @@ app = FastAPI(
 
 app.include_router(llmRouter, prefix="/api/llm", tags=["llm"])
 app.include_router(diffusionRouter, prefix="/api/diffusion", tags=["diffusion"])
+app.include_router(dbOperationsRouter, prefix="/api/db", tags=["db_operations"])
 if settings.DEBUG:
     app.include_router(adminRouter, prefix="/admin", tags=["Admin"])
 
