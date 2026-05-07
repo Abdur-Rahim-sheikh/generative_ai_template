@@ -1,20 +1,18 @@
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.responses import Response
 
-from ...config import app_logger, settings
-from ...data import CoquiTTS, OllamaLLM
-from ...tests.dummies import DummyLLM, DummyTTS
+from ...config import app_logger
+from ...dependencies.ai_services import (
+    get_chat_service,
+    get_llm,
+    get_tts,
+    get_tts_service,
+)
 from ...schemas.chat import ChatRequest, ChatResponse
 from ...schemas.script import ScriptRequest
 from ...services import ChatService, TTSService
-from ...dependencies.ai_services import (
-    get_chat_service,
-    get_tts_service,
-    get_llm,
-    get_tts,
-)
 
 
 @asynccontextmanager
