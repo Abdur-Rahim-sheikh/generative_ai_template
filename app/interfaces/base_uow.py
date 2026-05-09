@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from .base_repository import BaseUserRepository
+
+from .base_repository import BaseProductRepository, BaseUserRepository
 
 
 class BaseUnitOfWork(ABC):
     users: BaseUserRepository
+    products: BaseProductRepository
 
     @abstractmethod
     async def commit(self):
