@@ -24,7 +24,8 @@ services:
         - path: ./app
           action: restart
           target: /app/app
-    command: ["/app/.venv/bin/arq", "app.workers.setup.WorkerSettings"]
+    command:
+      ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
 
   comfy:
     extends:

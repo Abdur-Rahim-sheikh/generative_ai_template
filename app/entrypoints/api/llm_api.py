@@ -1,25 +1,28 @@
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.responses import Response
 
-from ..config import app_logger, settings
-from ..data import CoquiTTS, OllamaLLM
-from ..schemas.chat import ChatRequest, ChatResponse
-from ..schemas.script import ScriptRequest
-from ..services import ChatService, TTSService
-
-ollama_llm = OllamaLLM(host=settings.OLLAMA_HOST, model=settings.OLLAMA_MODEL)
-
-coqui_tts = CoquiTTS(host=settings.COQUI_HOST, port=settings.COQUI_PORT)
+from ...config import app_logger
+from ...dependencies.ai_services import (
+    get_chat_service,
+    get_llm,
+    get_tts,
+    get_tts_service,
+)
+from ...schemas.chat import ChatRequest, ChatResponse
+from ...schemas.script import ScriptRequest
+from ...services import ChatService, TTSService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await ollama_llm.prepare()
+    llm = get_llm()
+    tts = get_tts()
+    await llm.prepare()
     app_logger.info("ollama prepared")
 
-    await coqui_tts.load_essentials()
+    await tts.load_essentials()
     app_logger.info("coqui tts prepared")
 
     yield
@@ -27,15 +30,11 @@ async def lifespan(app: FastAPI):
 
 router = APIRouter(lifespan=lifespan)
 
-chat_service_ollama = ChatService(llm=ollama_llm)
-
-tts_service_coqui = TTSService(tts=coqui_tts)
-
 
 @router.post("/generate-script")
-async def generate_script(request: ChatRequest) -> ChatResponse:
-    current_chat_service = chat_service_ollama
-
+async def generate_script(
+    request: ChatRequest, chat_service: ChatService = Depends(get_chat_service)
+) -> ChatResponse:
     words = 40  # if short
     if request.duration == "medium":
         words = 60
@@ -48,7 +47,7 @@ async def generate_script(request: ChatRequest) -> ChatResponse:
         duration += f", within {turns=}"
 
     try:
-        return await current_chat_service.make_script(
+        return await chat_service.make_script(
             product=request.product,
             goal=request.goal,
             audience=request.audience,
@@ -67,15 +66,16 @@ async def generate_script(request: ChatRequest) -> ChatResponse:
 
 
 @router.post("/generate-tts")
-async def generate_tts(request: ScriptRequest):
-    current_tts_service = tts_service_coqui
-    current_enhance_service = chat_service_ollama
-
+async def generate_tts(
+    request: ScriptRequest,
+    tts_service: TTSService = Depends(get_tts_service),
+    chat_service: ChatService = Depends(get_chat_service),
+):
     if request.enhance_text:
         need_enhanced = [segment.text for segment in request.segments]
 
         try:
-            response = await current_enhance_service.enhance_script_text(
+            response = await chat_service.enhance_script_text(
                 segments=need_enhanced, language_id=request.segments[0].language_id
             )
 
@@ -86,7 +86,7 @@ async def generate_tts(request: ScriptRequest):
             app_logger.error(msg="Failed to enhance the text", exc_info=e)
 
     try:
-        audio = await current_tts_service.generate_tts(segments=request.segments)
+        audio = await tts_service.generate_tts(segments=request.segments)
     except Exception as e:
         msg = f"service {e}"
         raise HTTPException(status_code=400, detail=msg)

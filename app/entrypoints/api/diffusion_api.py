@@ -2,10 +2,11 @@ from arq.connections import ArqRedis
 from arq.jobs import Job, JobStatus
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..dependencies import get_job_queue
-from ..schemas.common import JobResponse, StatusResponse
-from ..schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
-from ..utils.image import decode_base64_to_bytes
+from ...dependencies import get_job_queue
+from ...schemas.common import JobResponse, StatusResponse
+from ...schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
+from ...utils.image import decode_base64_to_bytes
+from ...utils.watermark import auto_watermark
 
 router = APIRouter()
 
@@ -55,12 +56,13 @@ async def get_status(job_id: str, queue: ArqRedis = Depends(get_job_queue)):
         raise HTTPException(status_code=400, detail="Job id is invalid")
 
     message = f"Job is in {status.value} state"
-    result = None
+    results = None
     if status == JobStatus.complete:
         result_info = await job.result_info()
         message = "Something went wrong during processing"
         if result_info.success:
             message = "Image processed successfully"
-            result = result_info.result
+            results = result_info.results
+            results = [auto_watermark(r) for r in results]
 
-    return StatusResponse(status=status, message=message, results=result)
+    return StatusResponse(status=status, message=message, results=results)

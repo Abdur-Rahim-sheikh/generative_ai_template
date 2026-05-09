@@ -1,19 +1,12 @@
 from pydantic import BaseModel, computed_field, field_validator, Field
 
 from ..utils.image import decode_base64_to_image
+from typing import Literal
 
 
 class PromptToImage(BaseModel):
     prompt: str
-    ratio: str
-
-    @field_validator("ratio", mode="before")
-    @classmethod
-    def ratio_filter(cls, value: str) -> str:
-        accepted_ratios = ("1:1", "2:3", "3:2")
-        if value in accepted_ratios:
-            return value
-        raise ValueError(f"only accepted ratios are {accepted_ratios}")
+    ratio: Literal["1:1", "2:3", "3:2"]
 
 
 class PromptAndImageToImage(PromptToImage):

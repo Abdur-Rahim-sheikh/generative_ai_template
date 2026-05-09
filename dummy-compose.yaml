@@ -1,0 +1,70 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    ports:
+      - 8000:8000
+    develop:
+      watch:
+        - path: ./app
+          action: sync
+          target: /app/app
+        - path: ./pyproject.toml
+          action: rebuild
+          target: /app/pyproject.toml
+    restart: on-failure
+
+  worker:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    develop:
+      watch:
+        - path: ./app
+          action: restart
+          target: /app/app
+    restart: on-failure:3
+
+    command:
+      ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=$REDIS_PASSWORD
+    ports:
+      - 8004:6379
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+      - POSTGRES_DB=$DB_NAME
+    ports:
+      - 5432:5432
+
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+  #     - PGADMIN_DEFAULT_PASSWORD=admin
+  #   ports:
+  #     - 8006:80
+  #   depends_on:
+  #     - db
+
+#   cloudbeaver:
+#     image: dbeaver/cloudbeaver:latest
+#     restart: unless-stopped
+#     ports:
+#       - "8080:8978" # Access via http://localhost:8080
+#     volumes:
+#       - cloudbeaver_data:/opt/cloudbeaver/workspace
+#     depends_on:
+#       - db
+
+# volumes:
+#   cloudbeaver_data:
