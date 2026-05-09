@@ -3,10 +3,14 @@ from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlmodel import Field, SQLModel, String
+from sqlmodel import TIMESTAMP, Field, SQLModel, String
 
 TimeStamp = Annotated[
-    datetime, Field(default_factory=lambda: datetime.now(timezone.utc))
+    datetime,
+    Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=TIMESTAMP(timezone=True),
+    ),
 ]
 PrimaryKey = Annotated[UUID | None, Field(default_factory=uuid4, primary_key=True)]
 
@@ -43,7 +47,10 @@ class Wallet(SQLModel, table=True):
         datetime,
         Field(
             default_factory=lambda: datetime.now(timezone.utc),
-            sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},
+            sa_type=TIMESTAMP(timezone=True),
+            sa_column_kwargs={
+                "onupdate": lambda: datetime.now(timezone.utc),
+            },
         ),
     ]
 

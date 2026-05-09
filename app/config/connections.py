@@ -4,13 +4,20 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from .settings_config import settings
+from sqlalchemy.engine import URL
 
-# db_url = settings.DB_HOST  or "sqlite+aiosqlite:///./db.sqlite3"
-db_url = (
-    f"postgresql+asyncpg://{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_USER}"
-    if settings.DB_HOST
-    else "sqlite+aiosqlite:///./db.sqlite3"
-)
+if settings.DB_HOST:
+    db_url = URL.create(
+        "postgresql+asyncpg",
+        username=settings.DB_USER,
+        password=settings.DB_PASSWORD.get_secret_value(),
+        host=settings.DB_HOST,
+        port=settings.DB_PORT,
+        database=settings.DB_NAME,
+    )
+else:
+    db_url = "sqlite+aiosqlite:///resources/db.sqlite3"
+
 async_engine = create_async_engine(db_url, echo=True, future=True)
 
 

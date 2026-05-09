@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     DB_HOST: str | None = None
     DB_PORT: int | None = None
     DB_USER: str = "postgres"
+    DB_NAME: str = "postgres"
+    DB_PASSWORD: SecretStr
+
+    # redis config
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_DB: int
