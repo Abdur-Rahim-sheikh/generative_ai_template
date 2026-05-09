@@ -31,9 +31,9 @@ class User(SQLModel, table=True):
 
 class Product(SQLModel, table=True):
     id: PrimaryKey
-    title: str
-    description: str
-    price: float
+    title: str = Field(unique=True)
+    description: str = Field(default="")
+    price: float = Field(ge=0)
     unit: Literal["second", "generation"] = Field(sa_type=String)
     updated_at: TimeStamp
 
@@ -41,8 +41,8 @@ class Product(SQLModel, table=True):
 class Wallet(SQLModel, table=True):
     id: PrimaryKey
     user_id: UUID = Field(foreign_key="user.id", unique=True)
-    coin_balance: int = 0
-    free_uses_remaining: int = 3
+    coin_balance: int = Field(default=0, ge=0)
+    free_uses_remaining: int = Field(default=0, ge=0)
     updated_at: Annotated[
         datetime,
         Field(
@@ -59,7 +59,7 @@ class Transaction(SQLModel, table=True):
     id: PrimaryKey
     wallet_id: UUID = Field(foreign_key="wallet.id")
     reference_id: UUID | None = Field(foreign_key="product.id", nullable=True)
-    amount: int
+    amount: int = Field(ge=0)
     type: Literal["credit", "debit"] = Field(sa_type=String)
     created_at: TimeStamp
 
