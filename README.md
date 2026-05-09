@@ -1,59 +1,109 @@
-## Generative AI Template
+# Generative AI Backend
 
-##### Production-Ready Local Multimodal AI Backend (LLM + TTS + Image)
+Production-ready multimodal AI backend featuring LLM, image generation, and TTS. Built with **FastAPI**, **PostgreSQL**, **Redis**, and **ARQ**.
 
-`A fully self-hosted, production-grade Generative AI backend template powered by local models.
-Built with FastAPI, Redis, ARQ and Docker — designed for scalable, asynchronous AI workloads.`
+## Highlights
 
-#### What this Project Is?
+### Architecture Patterns
 
-**Generative AI Template** is a modular backend framework for building multimodal AI applications.
-It provides:
+- **Clean Architecture** — Layered design with interfaces, services, repositories, and schemas
+- **Dependency Injection** — Centralized service initialization for testability
+- **Unit of Work Pattern** — Transaction management across data layers
+- **Async-First** — Non-blocking FastAPI endpoints with background job processing
 
-- Text generation (LLM via Ollama)
-- Image generation (ComfyUI)
-- Text-to-Speech (Coqui TTS)
-- Async job queue with Redis + ARQ
-- Batch processing support for Image
-- Fully containerized setup
+### Database & Data
 
-The template is purposefully kept (100% Free) opensource dependent, so premium api can be plugged anytime without any issues.
+- **Redis** — In-memory caching and persistent job queue
+- **Repository Pattern** — Abstract data access layer with CRUD operations
+- **Pydantic Schemas** — Type-safe request/response validation
 
-This repo is designed to be:
+### AI Integration
 
-- A production-ready starter template
-- A foundation for SaaS AI systems
+- **Ollama LLM** — Local text generation with abstract base interface
+- **ComfyUI** — Image diffusion with dynamic workflow generation
+- **Coqui TTS** — Text-to-speech service integration
+- **Service Abstraction** — Swappable implementations for any AI provider
 
-## Architecture Overview
+### Asynchronous Processing
 
-```mermaid
-flowchart LR;
-A[Client] --> B[FastAPI API Layer]
-B --Async Call--> C[Ollama LLM Service]
-B --Job Id--> R[Redis Queue]
-R --> D[Coqui TTS Service]
-R --> E[ComfyUI Image Generation]
+- **ARQ Queue** — Background job workers for long-running tasks
+- **Immediate Responses** — API endpoints return job IDs without blocking
+- **Batch Processing** — Handle multiple concurrent image generations
+- **Job Persistence** — Redis-backed queue survives worker restarts
+
+---
+
+## Project Structure
+
+```
+.
+├── config/          # Settings, logging, connections
+├── data/            # External service clients (Ollama, ComfyUI, Coqui, Redis)
+├── domain/          # Core business entities
+├── interfaces/      # Abstract contracts (BaseRepository, BaseLLM, BaseTTS)
+├── dependencies/    # Dependency injection & initialization
+├── repositories/    # Data access layer (Unit of Work)
+├── services/        # Business logic (Chat, Product, TTS, Workflow)
+├── schemas/         # Pydantic validation (Chat, Image, User, Product)
+├── entrypoints/     # API routes & ARQ workers
+├── utils/           # Decorators, image processing, watermarking
+├── tests/           # Unit tests with dummy mocks
+└── main.py          # FastAPI application entry point
 ```
 
-## Why this architecture?
+---
 
-- Non-blocking API
-- Scalable job workers
-- Clean service abstractions
-- Isolating services
-- Easy horizontal scaling
+## API Endpoints
 
-## Future Plans
+```
+POST /api/llm/generate          → Text generation
+POST /api/diffusion/generate    → Image generation (async)
+POST /api/tts/generate          → Text-to-speech
+GET  /api/jobs/{job_id}         → Check job status
 
-Developing a generative AI platform is easy nowadays. But we need to maintain is though.
-So I am planning to add test cases using pydantic suits.
+Also, CRUD endpoints in progress.
+```
 
-## Generated Sample
+---
 
-Here is a image generated via ComfyUI of my cup,<br>
+## Tech Stack
+
+| Layer                | Technology              |
+| -------------------- | ----------------------- |
+| **API Framework**    | FastAPI (async)         |
+| **Database**         | PostgreSQL              |
+| **Cache/Queue**      | Redis + ARQ             |
+| **Data Validation**  | Pydantic                |
+| **LLM**              | Ollama                  |
+| **Image Generation** | ComfyUI                 |
+| **Text-to-Speech**   | Coqui TTS               |
+| **Deployment**       | Docker + Docker Compose |
+
+<!-- | **Testing**          | pytest + mock fixtures  | -->
+
+## Quick Start
+
+```bash
+# Environment setup
+cp .env.example .env # fill the env values with example values
+
+# Run with Docker
+docker compose up -d
+# or if not enough gpu resources
+# docker compose -f dummy-compose.yml up -d
+
+# API docs
+open http://localhost:8000/docs
+```
+
+---
+
+## Sample Output
+
+This mug of mine was interpolated by one of my ComfyUI workflows, and placed it in this beautiful background.
 
 <p align="center">
-<img src="resources/images/reference_cup.png" alt="A reference cup placed on a mountain" width="400" height="400"/>
+<img src="resources/images/reference_cup.png" alt="Generated via ComfyUI" width="400" height="400"/>
 </p>
 
-By the way, if you feel the need to get my workflow, feel free to mail me at `abi.rahim.sheikh@gmail.com`
+---
