@@ -32,14 +32,14 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db():
-    from ..domain.models import User, Product, Wallet, Transaction, Session  # noqa: F401
+    from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
 async def drop_db():
-    from ..domain.models import User, Product, Wallet, Transaction, Session  # noqa: F401
+    from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
 
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.drop_all)

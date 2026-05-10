@@ -1,12 +1,12 @@
 from uuid import uuid4, UUID
 
-from ...domain import User, Product, Wallet, Transaction, Session
+from ...domain import User, Product, Wallet, Transaction, UserSession
 from ...interfaces.base_repository import (
     BaseUserRepository,
     BaseProductRepository,
     BaseWalletRepository,
     BaseTransactionRepository,
-    BaseSessionRepository,
+    BaseUserSessionRepository,
 )
 from ...interfaces.base_uow import BaseUnitOfWork
 
@@ -99,23 +99,23 @@ class FakeTransactionRepository(BaseTransactionRepository):
         return [t for t in self.transactions.values() if t.wallet_id == wallet_id]
 
 
-class FakeSessionRepository(BaseSessionRepository):
+class FakeSessionRepository(BaseUserSessionRepository):
     """In-memory Session repository for unit tests."""
 
     def __init__(self):
-        self.sessions: dict[UUID, Session] = {}
+        self.sessions: dict[UUID, UserSession] = {}
 
-    async def save(self, data: Session) -> Session:
+    async def save(self, data: UserSession) -> UserSession:
         self.sessions[data.session_token] = data
         return data
 
-    async def get(self, id: UUID) -> Session | None:
+    async def get(self, id: UUID) -> UserSession | None:
         return self.sessions.get(id)
 
     async def delete(self, id: UUID) -> None:
         self.sessions.pop(id, None)
 
-    async def get_by_user_id(self, user_id: UUID) -> Session | None:
+    async def get_by_user_id(self, user_id: UUID) -> UserSession | None:
         for session in self.sessions.values():
             if session.user_id == user_id:
                 return session

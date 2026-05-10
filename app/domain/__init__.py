@@ -1,3 +1,3 @@
-from .models import Product, Session, Transaction, User, Wallet
+from .models import Product, UserSession, Transaction, User, Wallet
 
-__all__ = ["User", "Product", "Wallet", "Transaction", "Session"]
+__all__ = ["User", "Product", "Wallet", "Transaction", "UserSession"]

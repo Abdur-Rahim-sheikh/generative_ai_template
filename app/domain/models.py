@@ -12,6 +12,18 @@ TimeStamp = Annotated[
         sa_type=TIMESTAMP(timezone=True),
     ),
 ]
+
+TimeStampUpdate = Annotated[
+    datetime,
+    Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_type=TIMESTAMP(timezone=True),
+        sa_column_kwargs={
+            "onupdate": lambda: datetime.now(timezone.utc),
+        },
+    ),
+]
+
 PrimaryKey = Annotated[UUID | None, Field(default_factory=uuid4, primary_key=True)]
 
 
@@ -43,16 +55,7 @@ class Wallet(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="user.id", unique=True)
     coin_balance: int = Field(default=0, ge=0)
     free_uses_remaining: int = Field(default=0, ge=0)
-    updated_at: Annotated[
-        datetime,
-        Field(
-            default_factory=lambda: datetime.now(timezone.utc),
-            sa_type=TIMESTAMP(timezone=True),
-            sa_column_kwargs={
-                "onupdate": lambda: datetime.now(timezone.utc),
-            },
-        ),
-    ]
+    updated_at: TimeStampUpdate
 
 
 class Transaction(SQLModel, table=True):
@@ -64,7 +67,9 @@ class Transaction(SQLModel, table=True):
     created_at: TimeStamp
 
 
-class Session(SQLModel, table=True):
+class UserSession(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="user.id", unique=True)
     session_token: UUID = Field(default_factory=UUID, primary_key=True)
-    created_at: TimeStamp
+
+    last_activity_at: TimeStampUpdate
+    expires_at: datetime = Field(sa_type=TIMESTAMP(timezone=True))
