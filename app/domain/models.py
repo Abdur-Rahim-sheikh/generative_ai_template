@@ -33,7 +33,7 @@ class Product(SQLModel, table=True):
     id: PrimaryKey
     title: str = Field(unique=True)
     description: str = Field(default="")
-    price: float = Field(ge=0)
+    coin_cost: int = Field(ge=0)
     unit: Literal["second", "generation"] = Field(sa_type=String)
     updated_at: TimeStamp
 
