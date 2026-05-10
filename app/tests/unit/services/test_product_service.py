@@ -21,7 +21,7 @@ def create_request() -> CreateProductRequest:
     return CreateProductRequest(
         title="AI Voiceover",
         description="High quality TTS generation",
-        price=0.02,
+        coin_cost=4,
         unit="second",
     )
 
@@ -35,6 +35,7 @@ class TestProductService:
         assert product.id is not None
 
     async def test_create_product_persists_title(self, service, create_request, uow):
+        assert uow == service.uow, "Both unit of work are not same"
         product = await service.create_product(create_request)
         fetched = await uow.products.get(product.id)
         assert fetched is not None
@@ -61,9 +62,9 @@ class TestProductService:
         await service.delete_user(created.id)
         assert await uow.products.get(created.id) is None
 
-    async def test_price_is_stored_correctly(self, service, create_request):
+    async def test_coin_cost_is_stored_correctly(self, service, create_request):
         product = await service.create_product(create_request)
-        assert product.price == create_request.price
+        assert product.coin_cost == create_request.coin_cost
 
     async def test_unit_is_stored_correctly(self, service, create_request):
         product = await service.create_product(create_request)

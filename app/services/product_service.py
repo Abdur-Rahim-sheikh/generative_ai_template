@@ -11,7 +11,7 @@ class ProductService:
     async def create_product(self, data: CreateProductRequest) -> Product:
         async with self.uow as uow:
             product_data = Product.model_validate(data)
-            saved = await uow.users.save(product_data)
+            saved = await uow.products.save(product_data)
             return saved
 
     async def get_product(self, product_id: UUID) -> Product:

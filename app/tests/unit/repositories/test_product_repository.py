@@ -49,8 +49,8 @@ class TestFakeProductRepository:
         await repo.delete(uuid4())
 
     async def test_multiple_products_isolated(self, repo):
-        p1 = Product(title="TTS", description="", price=0.01, unit="second")
-        p2 = Product(title="Diffusion", description="", price=0.10, unit="generation")
+        p1 = Product(title="TTS", description="", coin_cost=2, unit="second")
+        p2 = Product(title="Diffusion", description="", coin_cost=3, unit="generation")
         await repo.save(p1)
         await repo.save(p2)
         assert await repo.get(p1.id) is p1

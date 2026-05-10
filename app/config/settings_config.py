@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
-from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr, ConfigDict
 
 
 class Settings(BaseSettings):
@@ -31,8 +31,7 @@ class Settings(BaseSettings):
     COMFY_HOST: str
     COMFY_PORT: int
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()

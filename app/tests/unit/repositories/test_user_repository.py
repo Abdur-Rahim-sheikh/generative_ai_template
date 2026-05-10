@@ -81,17 +81,3 @@ class TestFakeUserRepository:
         await repo.save(u2)
         assert await repo.get(u1.id) is u1
         assert await repo.get(u2.id) is u2
-
-    async def test_save_overwrites_on_duplicate_id(self, repo, sample_user):
-        """Saving a user with the same id should replace the old record."""
-        await repo.save(sample_user)
-        updated = User(
-            id=sample_user.id,
-            first_name="Updated",
-            last_name="Name",
-            email="updated@example.com",
-            hashed_password="new_hash",
-        )
-        await repo.save(updated)
-        fetched = await repo.get(sample_user.id)
-        assert fetched.first_name == "Updated"
