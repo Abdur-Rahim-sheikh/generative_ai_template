@@ -25,3 +25,6 @@ dependencies = [
 dev = [
     "ruff>=0.14.10",
 ]
+test = [
+    "pytest>=9.0.3",
+]
