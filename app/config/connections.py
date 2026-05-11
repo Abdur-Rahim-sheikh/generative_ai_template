@@ -1,10 +1,10 @@
 from typing import AsyncGenerator
 
+from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel
+
 from .settings_config import settings
-from sqlalchemy.engine import URL
 
 if settings.DB_HOST:
     db_url = URL.create(
@@ -31,15 +31,15 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def init_db():
-    from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
+# async def init_db():
+#     from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
 
-    async with async_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+#     async with async_engine.begin() as conn:
+#         await conn.run_sync(SQLModel.metadata.create_all)
 
 
-async def drop_db():
-    from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
+# async def drop_db():
+#     from ..domain.models import User, Product, Wallet, Transaction, UserSession  # noqa: F401
 
-    async with async_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
+#     async with async_engine.begin() as conn:
+#         await conn.run_sync(SQLModel.metadata.drop_all)

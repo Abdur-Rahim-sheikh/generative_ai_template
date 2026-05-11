@@ -6,24 +6,20 @@ from fastapi.responses import JSONResponse
 
 from .config import app_logger, settings
 from .entrypoints.api.admin_portal import router as adminRouter
-from .entrypoints.api.diffusion_api import router as diffusionRouter
 from .entrypoints.api.db_operations import router as dbOperationsRouter
+from .entrypoints.api.diffusion_api import router as diffusionRouter
 from .entrypoints.api.llm_api import router as llmRouter
 from .entrypoints.workers import REDIS_SETTINGS
-from .config.connections import init_db, drop_db
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _app.state.arq_pool = await create_pool(settings_=REDIS_SETTINGS)
     app_logger.info("Redis pool created")
-    await init_db()
-    app_logger.info("Database initialized")
+
     yield
     await _app.state.arq_pool.close()
     app_logger.info("Redis pool closed")
-    await drop_db()
-    app_logger.info("Database dropped")
 
 
 app = FastAPI(

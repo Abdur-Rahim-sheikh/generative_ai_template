@@ -10,10 +10,16 @@ services:
         - path: ./app
           action: sync
           target: /app/app
+          ignore:
+            - "**/__pycache__"
+            - "**/.pytest_cache"
+            - "**/migration/versions"
         - path: ./pyproject.toml
           action: rebuild
           target: /app/pyproject.toml
     restart: on-failure
+    volumes:
+      - .:/app
 
   worker:
     build:
@@ -24,8 +30,12 @@ services:
         - path: ./app
           action: restart
           target: /app/app
+          ignore:
+            - "**/__pycache__"
+            - "**/.pytest_cache"
     restart: on-failure:3
-
+    volumes:
+      - .:/app
     command:
       ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
 
