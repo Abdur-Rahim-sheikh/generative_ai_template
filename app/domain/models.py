@@ -35,8 +35,10 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
     created_at: TimeStamp
-    wallet: "Wallet" = Relationship(back_populates="user")
-    user_session: "UserSession" = Relationship(back_populates="user")
+    wallet: "Wallet" = Relationship(back_populates="user", cascade_delete=True)
+    user_session: "UserSession" = Relationship(
+        back_populates="user", cascade_delete=True
+    )
 
     @property
     def full_name(self) -> str:
@@ -56,34 +58,40 @@ class Product(SQLModel, table=True):
 
 class Wallet(SQLModel, table=True):
     id: PrimaryKey
-    user_id: UUID = Field(foreign_key="user.id", unique=True, ondelete="CASCADE")
+    user_id: UUID | None = Field(
+        foreign_key="user.id", unique=True, nullable=False, ondelete="CASCADE"
+    )
     coin_balance: int = Field(default=0, ge=0)
     free_uses_remaining: int = Field(default=0, ge=0)
     updated_at: TimeStampUpdate
-    user: User = Relationship(back_populates="wallet", cascade_delete=True)
+    user: User = Relationship(back_populates="wallet")
 
-    transactions: list["Transaction"] = Relationship(back_populates="wallet")
+    transactions: list["Transaction"] = Relationship(
+        back_populates="wallet", cascade_delete=True
+    )
 
 
 class Transaction(SQLModel, table=True):
     id: PrimaryKey
-    wallet_id: UUID = Field(foreign_key="wallet.id", ondelete="CASCADE")
-    reference_id: UUID | None = Field(
-        foreign_key="product.id", nullable=True, ondelete="CASCADE"
+    wallet_id: UUID | None = Field(
+        foreign_key="wallet.id", nullable=False, ondelete="CASCADE"
     )
+    reference_id: UUID | None = Field(foreign_key="product.id", nullable=True)
     amount: int = Field(ge=0)
     type: Literal["credit", "debit"] = Field(sa_type=String)
     created_at: TimeStamp
 
-    wallet: Wallet = Relationship(back_populates="transactions", cascade_delete=True)
-    product: Product = Relationship(back_populates="transactions", cascade_delete=True)
+    wallet: Wallet = Relationship(back_populates="transactions")
+    product: Product = Relationship(back_populates="transactions")
 
 
 class UserSession(SQLModel, table=True):
-    user_id: UUID = Field(foreign_key="user.id", unique=True, ondelete="CASCADE")
-    session_token: UUID = Field(default_factory=UUID, primary_key=True)
+    user_id: UUID | None = Field(
+        foreign_key="user.id", unique=True, nullable=False, ondelete="CASCADE"
+    )
+    session_token: UUID | None = Field(default_factory=uuid4, primary_key=True)
 
     last_activity_at: TimeStampUpdate
     expires_at: datetime = Field(sa_type=TIMESTAMP(timezone=True))
 
-    user: User = Relationship(back_populates="user_session", cascade_delete=True)
+    user: User = Relationship(back_populates="user_session")

@@ -33,3 +33,6 @@ class UnitOfWork(BaseUnitOfWork):
             await self.commit()
 
         await self._session.close()
+
+    async def flush(self):
+        await self._session.flush()

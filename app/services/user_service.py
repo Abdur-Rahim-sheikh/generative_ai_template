@@ -11,16 +11,18 @@ class UserService:
 
     async def create_user(self, data: CreateUserRequest) -> User:
         async with self.uow as uow:
-            user_data = User(
+            new_user = User(
                 first_name=data.first_name,
                 last_name=data.last_name,
                 email=data.email,
                 hashed_password=data.hashed_password,
             )
-            # new_wallet = Wallet()
+            await uow.users.save(new_user)
 
-            saved = await uow.users.save(user_data)
-            return saved
+            new_wallet = Wallet(user=new_user, free_uses_remaining=50)
+
+            await uow.wallets.save(new_wallet)
+            return new_user
 
     async def get_user(self, user_id: UUID) -> User:
         async with self.uow as uow:

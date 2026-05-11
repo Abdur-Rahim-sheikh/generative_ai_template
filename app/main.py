@@ -10,6 +10,8 @@ from .entrypoints.api.db_operations import router as dbOperationsRouter
 from .entrypoints.api.diffusion_api import router as diffusionRouter
 from .entrypoints.api.llm_api import router as llmRouter
 from .entrypoints.workers import REDIS_SETTINGS
+from .domain.exceptions import DomainException
+from .dependencies.exception_handlers import global_domain_exception_handler
 
 
 @asynccontextmanager
@@ -30,6 +32,8 @@ app = FastAPI(
     redoc_url="/redoc" if settings.DEBUG else None,
     lifespan=lifespan,
 )
+
+app.add_exception_handler(DomainException, global_domain_exception_handler)
 
 app.include_router(llmRouter, prefix="/api/llm", tags=["llm"])
 app.include_router(diffusionRouter, prefix="/api/diffusion", tags=["diffusion"])

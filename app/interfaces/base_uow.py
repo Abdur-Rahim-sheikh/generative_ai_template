@@ -25,6 +25,10 @@ class BaseUnitOfWork(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def flush(self):
+        raise NotImplementedError
+
+    @abstractmethod
     async def __aenter__(self):
         raise NotImplementedError
 

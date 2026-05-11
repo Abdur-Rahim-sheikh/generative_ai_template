@@ -4,12 +4,19 @@ from sqlmodel import select
 
 from ..domain import User
 from ..interfaces.base_repository import BaseUserRepository
+from sqlalchemy.exc import IntegrityError
+from ..domain.exceptions import AlreadyExists
 
 
 class UserRepository(BaseUserRepository):
-    async def save(self, data: User) -> User:
-        self.session.add(data)
-        return data
+    async def save(self, data: User):
+        try:
+            self.session.add(data)
+            await self.session.flush()
+
+            return data
+        except IntegrityError:
+            raise AlreadyExists("User Already exists")
 
     async def get(self, id: UUID) -> User:
         result = await self.session.exec(select(User).where(User.id == id))

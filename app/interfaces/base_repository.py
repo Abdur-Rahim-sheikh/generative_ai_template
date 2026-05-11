@@ -14,7 +14,7 @@ class BaseRepository(Generic[T], ABC):
         self.session = session
 
     @abstractmethod
-    async def save(self, data: T) -> T:
+    async def save(self, data: T):
         raise NotImplementedError
 
     @abstractmethod
