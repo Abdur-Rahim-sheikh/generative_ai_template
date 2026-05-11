@@ -1,11 +1,20 @@
 from abc import ABC, abstractmethod
 
-from .base_repository import BaseProductRepository, BaseUserRepository
+from .base_repository import (
+    BaseProductRepository,
+    BaseUserRepository,
+    BaseTransactionRepository,
+    BaseUserSessionRepository,
+    BaseWalletRepository,
+)
 
 
 class BaseUnitOfWork(ABC):
     users: BaseUserRepository
     products: BaseProductRepository
+    transactions: BaseTransactionRepository
+    user_sessions: BaseUserSessionRepository
+    wallets: BaseWalletRepository
 
     @abstractmethod
     async def commit(self):

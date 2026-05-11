@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from ..domain import User
+from ..domain import User, Wallet
 from ..interfaces import BaseUnitOfWork
 from ..schemas.user import CreateUserRequest
 
@@ -17,6 +17,8 @@ class UserService:
                 email=data.email,
                 hashed_password=data.hashed_password,
             )
+            # new_wallet = Wallet()
+
             saved = await uow.users.save(user_data)
             return saved
 
