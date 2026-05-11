@@ -28,3 +28,9 @@ comfy-run:
 	docker compose -f comfy-compose.yaml up -d 
 	
 comfy-start: comfy-build comfy-run
+
+
+# alembic long commands inside docker
+
+alembic-migration:
+	docker compose exec backend uv run alembic revision --autogenerate -m "initial migration"
