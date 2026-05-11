@@ -1,21 +1,30 @@
-from ..interfaces.base_repository import BaseWalletRepository
-from ..domain import Wallet
 from uuid import UUID
+
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import delete as delete_statement
 from sqlmodel import select
+
+from ..domain import Wallet
+from ..domain.exceptions import AlreadyExists
+from ..interfaces.base_repository import BaseWalletRepository
 
 
 class WalletRepository(BaseWalletRepository):
     async def save(self, data: Wallet) -> Wallet:
-        self.session.add(data)
+        try:
+            self.session.add(data)
+            self.session.flush()
+        except IntegrityError:
+            raise AlreadyExists("This wallet already exists")
 
     async def get(self, id: UUID) -> Wallet:
         wallet = await self.session.get(Wallet, id)
         return wallet
 
     async def delete(self, id: UUID):
-        wallet = await self.get(id)
-        if wallet:
-            await self.session.delete(wallet)
+        statement = delete_statement(Wallet).where(Wallet.id == id)
+        await self.session.execute(statement)
+        await self.session.flush()
 
     async def get_by_user_id(self, user_id: UUID) -> Wallet:
         wallet = await self.session.exec(

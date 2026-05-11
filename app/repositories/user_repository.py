@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlmodel import select
+from sqlmodel import select, delete as table_delete
 
 from ..domain import User
 from ..interfaces.base_repository import BaseUserRepository
@@ -23,10 +23,10 @@ class UserRepository(BaseUserRepository):
         return result.first()
 
     async def delete(self, id: UUID) -> None:
-        user = await self.get(id)
-        if user:
-            await self.session.delete(user)
+        statement = table_delete(User).where(User.id == id)
+        await self.session.execute(statement=statement)
+        await self.session.flush()
 
-    async def get_by_email(self, email: str) -> User:
-        result = await self.session.exec(select(User).where(User.email == email))
+    async def get_by_email(self, email: str) -> User | None:
+        result = await self.session.execute(select(User).where(User.email == email))
         return result.first()

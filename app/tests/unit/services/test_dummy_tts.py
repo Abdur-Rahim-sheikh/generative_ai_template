@@ -1,4 +1,3 @@
-import pytest
 
 from ...dummies import DummyTTS
 from ....interfaces import BaseTTS

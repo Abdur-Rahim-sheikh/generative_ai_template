@@ -1,7 +1,6 @@
 import asyncio
 import uuid
 
-from ...schemas.comfy import ComfyStatus
 
 
 class DummyComfyClient:
