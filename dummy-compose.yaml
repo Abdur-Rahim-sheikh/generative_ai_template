@@ -7,13 +7,6 @@ services:
       - 8000:8000
     develop:
       watch:
-        - path: ./app
-          action: sync
-          target: /app/app
-          ignore:
-            - "**/__pycache__"
-            - "**/.pytest_cache"
-            - "**/migration/versions"
         - path: ./pyproject.toml
           action: rebuild
           target: /app/pyproject.toml
@@ -25,14 +18,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    develop:
-      watch:
-        - path: ./app
-          action: restart
-          target: /app/app
-          ignore:
-            - "**/__pycache__"
-            - "**/.pytest_cache"
+
     restart: on-failure:3
     volumes:
       - .:/app
