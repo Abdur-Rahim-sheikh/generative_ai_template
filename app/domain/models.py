@@ -35,8 +35,8 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
     created_at: TimeStamp
-    wallet: "Wallet" = Relationship(back_populates="user", cascade_delete=True)
-    user_session: "UserSession" = Relationship(
+    wallet: "Wallet | None" = Relationship(back_populates="user", cascade_delete=True)
+    user_session: "UserSession | None" = Relationship(
         back_populates="user", cascade_delete=True
     )
 
@@ -51,7 +51,7 @@ class Product(SQLModel, table=True):
     description: str = Field(default="")
     coin_cost: int = Field(ge=0)
     unit: Literal["second", "generation"] = Field(sa_type=String)
-    updated_at: TimeStamp
+    updated_at: TimeStampUpdate
 
     transactions: list["Transaction"] = Relationship(back_populates="product")
 
@@ -76,7 +76,7 @@ class Transaction(SQLModel, table=True):
     wallet_id: UUID | None = Field(
         foreign_key="wallet.id", nullable=False, ondelete="CASCADE"
     )
-    reference_id: UUID | None = Field(foreign_key="product.id", nullable=True)
+    product_id: UUID | None = Field(foreign_key="product.id", nullable=True)
     amount: int = Field(ge=0)
     type: Literal["credit", "debit"] = Field(sa_type=String)
     created_at: TimeStamp
