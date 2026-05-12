@@ -27,8 +27,8 @@ class WalletRepository(BaseWalletRepository):
         await self.session.flush()
 
     async def get_by_user_id(self, user_id: UUID) -> Wallet:
-        wallet = await self.session.exec(
+        wallet = await self.session.execute(
             select(Wallet).where(Wallet.user_id == user_id)
         )
 
-        return wallet
+        return wallet.scalar_one_or_none()

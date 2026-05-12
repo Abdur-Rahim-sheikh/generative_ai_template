@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from typing import Self
 from .base_repository import (
     BaseProductRepository,
     BaseUserRepository,
@@ -29,7 +29,7 @@ class BaseUnitOfWork(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         raise NotImplementedError
 
     @abstractmethod

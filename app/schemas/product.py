@@ -1,6 +1,8 @@
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from uuid import UUID
+from datetime import datetime
 
 
 class BaseProduct(BaseModel):
@@ -12,3 +14,8 @@ class BaseProduct(BaseModel):
 
 class CreateProductRequest(BaseProduct):
     pass
+
+
+class ReadProduct(BaseProduct):
+    id: UUID
+    updated_at: datetime

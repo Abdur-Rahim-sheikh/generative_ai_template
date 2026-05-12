@@ -18,9 +18,9 @@ class UserRepository(BaseUserRepository):
         except IntegrityError:
             raise AlreadyExists("User Already exists")
 
-    async def get(self, id: UUID) -> User:
-        result = await self.session.exec(select(User).where(User.id == id))
-        return result.first()
+    async def get(self, id: UUID) -> User | None:
+        result = await self.session.execute(select(User).where(User.id == id))
+        return result.scalar_one_or_none()
 
     async def delete(self, id: UUID) -> None:
         statement = table_delete(User).where(User.id == id)
@@ -29,4 +29,4 @@ class UserRepository(BaseUserRepository):
 
     async def get_by_email(self, email: str) -> User | None:
         result = await self.session.execute(select(User).where(User.email == email))
-        return result.first()
+        return result.scalar_one_or_none()

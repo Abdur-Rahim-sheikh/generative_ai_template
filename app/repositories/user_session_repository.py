@@ -26,6 +26,8 @@ class UserSessionRepository(BaseUserSessionRepository):
         await self.session.flush()
 
     async def get_by_user_id(self, user_id: UUID) -> UserSession | None:
-        return await self.session.execute(
+        user_session = await self.session.execute(
             select(UserSession).where(UserSession.user_id == user_id)
         )
+
+        return user_session.scalar_one_or_none()

@@ -24,7 +24,7 @@ class UserService:
             await uow.wallets.save(new_wallet)
             return new_user
 
-    async def get_user(self, user_id: UUID) -> User:
+    async def get_user(self, user_id: UUID) -> User | None:
         async with self.uow as uow:
             user = await uow.users.get(user_id)
             return user
