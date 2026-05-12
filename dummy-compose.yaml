@@ -12,7 +12,8 @@ services:
           target: /app/pyproject.toml
     restart: on-failure
     volumes:
-      - .:/app
+      - ./app:/app/app
+      - ./migrations:/app/migrations
 
   worker:
     build:
@@ -21,7 +22,8 @@ services:
 
     restart: on-failure:3
     volumes:
-      - .:/app
+      - ./app:/app/app
+      - ./migrations:/app/migrations
     command:
       ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
 

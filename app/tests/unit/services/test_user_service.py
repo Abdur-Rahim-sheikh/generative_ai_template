@@ -5,6 +5,7 @@ import pytest
 from ....schemas.user import CreateUserRequest
 from ....services.user_service import UserService
 from ...fakes import FakeUnitOfWork
+from ....domain.exceptions import NotFound
 
 
 @pytest.fixture
@@ -56,9 +57,9 @@ class TestUserService:
         assert fetched is not None
         assert fetched.id == created.id
 
-    async def test_get_user_returns_none_for_missing_id(self, service):
-        result = await service.get_user(uuid4())
-        assert result is None
+    async def test_get_user_returns_notfound_exception_for_missing_id(self, service):
+        with pytest.raises(NotFound):
+            await service.get_user(uuid4())
 
     async def test_delete_user_removes_from_storage(self, service, create_request, uow):
         created = await service.create_user(create_request)
@@ -74,9 +75,11 @@ class TestUserService:
         assert fetched is not None
         assert fetched.id == created.id
 
-    async def test_get_user_by_email_returns_none_for_unknown(self, service):
-        result = await service.get_user_by_email("ghost@nowhere.com")
-        assert result is None
+    async def test_get_user_by_email_returns_notfound_exception_for_unknown(
+        self, service
+    ):
+        with pytest.raises(NotFound):
+            await service.get_user_by_email("ghost@nowhere.com")
 
     async def test_rollback_called_on_exception(self, uow):
         """If the service raises inside the context, rollback must be called."""

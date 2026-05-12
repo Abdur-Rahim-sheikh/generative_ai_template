@@ -137,6 +137,7 @@ class FakeUnitOfWork(BaseUnitOfWork):
 
         self.committed = False
         self.rolled_back = False
+        self.flushed = False
 
     async def commit(self):
         self.committed = True
@@ -154,3 +155,6 @@ class FakeUnitOfWork(BaseUnitOfWork):
             await self.rollback()
         else:
             await self.commit()
+
+    async def flush(self):
+        self.flushed = True

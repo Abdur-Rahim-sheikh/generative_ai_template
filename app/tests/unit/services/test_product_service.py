@@ -4,6 +4,7 @@ from uuid import uuid4
 from ....schemas.product import CreateProductRequest
 from ....services.product_service import ProductService
 from ...fakes import FakeUnitOfWork
+from ....domain.exceptions import NotFound
 
 
 @pytest.fixture
@@ -51,9 +52,9 @@ class TestProductService:
         assert fetched is not None
         assert fetched.id == created.id
 
-    async def test_get_product_returns_none_for_missing(self, service):
-        result = await service.get_product(uuid4())
-        assert result is None
+    async def test_get_product_returns_notfound_exception_for_missing(self, service):
+        with pytest.raises(NotFound):
+            await service.get_product(uuid4())
 
     async def test_delete_product_removes_from_storage(
         self, service, create_request, uow
