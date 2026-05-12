@@ -35,8 +35,8 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
     created_at: TimeStamp
-    wallet: "Wallet | None" = Relationship(back_populates="user", cascade_delete=True)
-    user_session: "UserSession | None" = Relationship(
+    wallet: "Wallet" = Relationship(back_populates="user", cascade_delete=True)
+    user_session: "UserSession" = Relationship(
         back_populates="user", cascade_delete=True
     )
 

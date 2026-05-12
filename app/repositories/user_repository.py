@@ -1,11 +1,12 @@
 from uuid import UUID
 
-from sqlmodel import select, delete as table_delete
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import delete as table_delete
+from sqlmodel import select
 
+from ..domain.exceptions import AlreadyExists
 from ..domain.models import User
 from ..interfaces.base_repository import BaseUserRepository
-from sqlalchemy.exc import IntegrityError
-from ..domain.exceptions import AlreadyExists
 
 
 class UserRepository(BaseUserRepository):
@@ -20,7 +21,8 @@ class UserRepository(BaseUserRepository):
 
     async def get(self, id: UUID) -> User | None:
         result = await self.session.execute(select(User).where(User.id == id))
-        return result.scalar_one_or_none()
+        x = result.scalar_one_or_none()
+        return x
 
     async def delete(self, id: UUID) -> None:
         statement = table_delete(User).where(User.id == id)

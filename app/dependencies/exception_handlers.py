@@ -17,7 +17,7 @@ handlers = {
 
 async def global_domain_exception_handler(request: Request, exc: DomainException):
     return JSONResponse(
-        status_code=handlers.get(exc, DomainException),
+        status_code=handlers.get(type(exc), 400),
         content={
             "status": "error",
             "message": exc.message,
