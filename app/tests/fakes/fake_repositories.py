@@ -1,6 +1,6 @@
 from uuid import uuid4, UUID
 
-from ...domain import User, Product, Wallet, Transaction, UserSession
+from ...domain.models import User, Product, Wallet, Transaction, UserSession
 from ...interfaces.base_repository import (
     BaseUserRepository,
     BaseProductRepository,

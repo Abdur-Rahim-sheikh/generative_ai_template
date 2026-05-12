@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from ..domain import User, Wallet
+from ..domain.models import User, Wallet
 from ..interfaces import BaseUnitOfWork
 from ..schemas.user import CreateUserRequest
 

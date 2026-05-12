@@ -1,7 +1,7 @@
 import pytest
 from uuid import uuid4
 
-from ....domain import User
+from ....domain.models import User
 from ...fakes import FakeUserRepository
 
 

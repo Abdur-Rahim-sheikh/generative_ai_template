@@ -14,6 +14,11 @@ class AlreadyExists(DomainException):
         super().__init__(message=message, status_code=status.HTTP_409_CONFLICT)
 
 
+class NotFound(DomainException):
+    def __init__(self, message: str = "Id not Found"):
+        super().__init__(message=message, status_code=status.HTTP_404_NOT_FOUND)
+
+
 class InsufficientFunds(DomainException):
     def __init__(self, message: str = "Not enough coins in wallet"):
         super().__init__(message=message, status_code=status.HTTP_402_PAYMENT_REQUIRED)

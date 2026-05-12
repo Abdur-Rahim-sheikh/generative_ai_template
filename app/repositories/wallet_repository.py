@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import delete as delete_statement
 from sqlmodel import select
 
-from ..domain import Wallet
+from ..domain.models import Wallet
 from ..domain.exceptions import AlreadyExists
 from ..interfaces.base_repository import BaseWalletRepository
 

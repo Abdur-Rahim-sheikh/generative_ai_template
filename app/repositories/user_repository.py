@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlmodel import select, delete as table_delete
 
-from ..domain import User
+from ..domain.models import User
 from ..interfaces.base_repository import BaseUserRepository
 from sqlalchemy.exc import IntegrityError
 from ..domain.exceptions import AlreadyExists

@@ -1,7 +1,8 @@
-import pytest
 from uuid import uuid4
 
-from ....domain import Product
+import pytest
+
+from ....domain.models import Product
 from ...fakes import FakeProductRepository
 
 

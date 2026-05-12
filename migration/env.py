@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection, URL
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 from app.config import settings
-from app.domain import *  # noqa
+from app.domain.models import *  # noqa
 from alembic import context
 
 # this is the Alembic Config object, which provides

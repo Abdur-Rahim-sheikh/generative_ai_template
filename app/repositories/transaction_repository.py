@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlmodel import select
 
-from ..domain import Transaction
+from ..domain.models import Transaction
 from ..interfaces.base_repository import BaseTransactionRepository
 
 

@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import delete as delete_statement
 from sqlmodel import select
 
-from ..domain import UserSession
+from ..domain.models import UserSession
 from ..domain.exceptions import AlreadyExists
 from ..interfaces.base_repository import BaseUserSessionRepository
 

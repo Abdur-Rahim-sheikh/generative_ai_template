@@ -1,6 +1,6 @@
 from uuid import UUID
 from ..interfaces.base_uow import BaseUnitOfWork
-from ..domain import Product
+from ..domain.models import Product
 from ..schemas.product import CreateProductRequest
 
 

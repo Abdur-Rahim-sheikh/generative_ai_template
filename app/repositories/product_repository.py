@@ -2,7 +2,7 @@ from uuid import UUID
 
 from sqlmodel import select, delete as delete_statement
 
-from ..domain import Product
+from ..domain.models import Product
 from ..interfaces.base_repository import BaseProductRepository
 from ..domain.exceptions import AlreadyExists
 from sqlalchemy.exc import IntegrityError
