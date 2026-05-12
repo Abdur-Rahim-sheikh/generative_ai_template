@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from ..domain.models import User, Wallet
+from ..domain.exceptions import NotFound
 from ..interfaces import BaseUnitOfWork
 from ..schemas.user import CreateUserRequest
 
@@ -27,6 +28,8 @@ class UserService:
     async def get_user(self, user_id: UUID) -> User | None:
         async with self.uow as uow:
             user = await uow.users.get(user_id)
+            if not user:
+                raise NotFound(f"User Not Found by this {user_id=}")
             return user
 
     async def delete_user(self, user_id: UUID) -> None:
@@ -36,4 +39,6 @@ class UserService:
     async def get_user_by_email(self, email: str) -> User:
         async with self.uow as uow:
             user = await uow.users.get_by_email(email)
+            if not user:
+                raise NotFound(f"User not found to this {email=}")
             return user

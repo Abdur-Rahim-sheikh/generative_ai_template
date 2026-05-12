@@ -24,4 +24,5 @@ class CreateUserRequest(BaseUser):
 
 class ReadUser(BaseUser):
     id: UUID
+    is_active: bool
     created_at: datetime
