@@ -2,9 +2,10 @@ import pytest
 
 from ....domain.models import Product
 from ...fakes import FakeProductRepository
+from .base import BaseRepositoryCommonTests
 
 
-class TestFakeProductRepository:
+class TestProductRepository(BaseRepositoryCommonTests):
     @pytest.fixture
     def repo(self) -> FakeProductRepository:
         return FakeProductRepository()

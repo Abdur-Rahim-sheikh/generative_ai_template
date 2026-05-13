@@ -3,7 +3,7 @@ from .fake_repositories import (
     FakeProductRepository,
     FakeWalletRepository,
     FakeTransactionRepository,
-    FakeSessionRepository,
+    FakeUserSessionRepository,
     FakeUnitOfWork,
 )
 
@@ -12,6 +12,6 @@ __all__ = [
     "FakeProductRepository",
     "FakeWalletRepository",
     "FakeTransactionRepository",
-    "FakeSessionRepository",
+    "FakeUserSessionRepository",
     "FakeUnitOfWork",
 ]

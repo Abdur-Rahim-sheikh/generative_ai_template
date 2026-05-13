@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from pydantic import EmailStr
 from sqlmodel import TIMESTAMP, Field, SQLModel, String, Relationship
+from sqlalchemy import CheckConstraint
 
 TimeStamp = Annotated[
     datetime,
@@ -49,7 +50,7 @@ class Product(SQLModel, table=True):
     id: PrimaryKey
     title: str = Field(unique=True)
     description: str = Field(default="")
-    coin_cost: int = Field(ge=0)
+    coin_cost: int = Field(ge=0, sa_column_args=(CheckConstraint("coin_cost >= 0")))
     unit: Literal["second", "generation"] = Field(sa_type=String)
     updated_at: TimeStampUpdate
 
@@ -61,8 +62,12 @@ class Wallet(SQLModel, table=True):
     user_id: UUID | None = Field(
         foreign_key="user.id", unique=True, nullable=False, ondelete="CASCADE"
     )
-    coin_balance: int = Field(default=0, ge=0)
-    free_uses_remaining: int = Field(default=0, ge=0)
+    coin_balance: int = Field(
+        default=0, ge=0, sa_column_args=(CheckConstraint("coin_balance >= 0"),)
+    )
+    free_uses_remaining: int = Field(
+        default=0, ge=0, sa_column_args=(CheckConstraint("free_uses_remaining >= 0"),)
+    )
     updated_at: TimeStampUpdate
     user: User = Relationship(back_populates="wallet")
 
@@ -77,7 +82,7 @@ class Transaction(SQLModel, table=True):
         foreign_key="wallet.id", nullable=False, ondelete="CASCADE"
     )
     product_id: UUID | None = Field(foreign_key="product.id", nullable=True)
-    amount: int = Field(ge=0)
+    amount: int = Field(ge=0, sa_column_args=(CheckConstraint("amount>=0"),))
     type: Literal["credit", "debit"] = Field(sa_type=String)
     created_at: TimeStamp
 
@@ -86,10 +91,11 @@ class Transaction(SQLModel, table=True):
 
 
 class UserSession(SQLModel, table=True):
+    id: PrimaryKey
+
     user_id: UUID | None = Field(
         foreign_key="user.id", unique=True, nullable=False, ondelete="CASCADE"
     )
-    session_token: UUID | None = Field(default_factory=uuid4, primary_key=True)
 
     last_activity_at: TimeStampUpdate
     expires_at: datetime = Field(sa_type=TIMESTAMP(timezone=True))

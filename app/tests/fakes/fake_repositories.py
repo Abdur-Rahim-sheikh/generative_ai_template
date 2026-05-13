@@ -1,12 +1,12 @@
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
-from ...domain.models import User, Product, Wallet, Transaction, UserSession
+from ...domain.models import Product, Transaction, User, UserSession, Wallet
 from ...interfaces.base_repository import (
-    BaseUserRepository,
     BaseProductRepository,
-    BaseWalletRepository,
     BaseTransactionRepository,
+    BaseUserRepository,
     BaseUserSessionRepository,
+    BaseWalletRepository,
 )
 from ...interfaces.base_uow import BaseUnitOfWork
 
@@ -99,14 +99,15 @@ class FakeTransactionRepository(BaseTransactionRepository):
         return [t for t in self.transactions.values() if t.wallet_id == wallet_id]
 
 
-class FakeSessionRepository(BaseUserSessionRepository):
+class FakeUserSessionRepository(BaseUserSessionRepository):
     """In-memory Session repository for unit tests."""
 
     def __init__(self):
         self.sessions: dict[UUID, UserSession] = {}
 
     async def save(self, data: UserSession) -> UserSession:
-        self.sessions[data.session_token] = data
+        data.id = uuid4()
+        self.sessions[data.id] = data
         return data
 
     async def get(self, id: UUID) -> UserSession | None:
@@ -133,7 +134,7 @@ class FakeUnitOfWork(BaseUnitOfWork):
         self.products = FakeProductRepository()
         self.wallets = FakeWalletRepository()
         self.transactions = FakeTransactionRepository()
-        self.sessions = FakeSessionRepository()
+        self.sessions = FakeUserSessionRepository()
 
         self.committed = False
         self.rolled_back = False
