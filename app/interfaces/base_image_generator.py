@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class BaseImage(ABC):
+class BaseImageGenerator(ABC):
     @abstractmethod
     async def generate(
         self, prompt: str, width: int, height: int, batch: int = 1

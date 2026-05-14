@@ -1,4 +1,5 @@
 from .comfy_client import ComfyClient
+from .comfy_image import ComfyImage
 from .coqui_tts import CoquiTTS
 from .ollama_llm import OllamaLLM
 
@@ -7,6 +8,6 @@ __all__ = [
     "ChatgptLLM",
     "CoquiTTS",
     "ElevenlabTTS",
+    "ComfyImage",
     "ComfyClient",
-    "ChatgptImage",
 ]

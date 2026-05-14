@@ -1,13 +1,7 @@
 from .chat_service import ChatService
+from .image_service import ImageService
 from .product_service import ProductService
 from .tts_service import TTSService
 from .user_service import UserService
-from .workflow_generator import WorkflowGenerator
 
-__all__ = [
-    "ChatService",
-    "TTSService",
-    "WorkflowGenerator",
-    "UserService",
-    "ProductService",
-]
+__all__ = ["ChatService", "TTSService", "UserService", "ProductService", "ImageService"]
