@@ -1,7 +1,7 @@
 import uuid
 
 from ...config import app_logger, settings
-from ...data import ComfyClient
+from ...adapters import ComfyClient
 from ...tests.dummies import DummyComfyClient
 from ...services import WorkflowGenerator
 
@@ -18,7 +18,7 @@ async def realistic_image(
             prompt=prompt, width=width, height=height, batch=batch
         )
         images = await client.generate_image(workflow=workflow)
-        # currently return only one due to business reason
+
         return images
 
 

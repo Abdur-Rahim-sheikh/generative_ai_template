@@ -2,34 +2,34 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 from uuid import UUID
 
-from sqlmodel import Session as SQLModelSession
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..domain import Session, Transaction, User, Wallet, Product
+from ..domain.models import Product, UserSession, Transaction, User, Wallet
 
 T = TypeVar("T")
 
 
 class BaseRepository(Generic[T], ABC):
-    def __init__(self, session: SQLModelSession):
+    def __init__(self, session: AsyncSession):
         self.session = session
 
     @abstractmethod
-    async def save(self, data: T) -> T:
-        pass
+    async def save(self, data: T):
+        raise NotImplementedError
 
     @abstractmethod
-    async def get(self, id: UUID) -> T:
-        pass
+    async def get(self, id: UUID) -> T | None:
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, id: UUID) -> None:
-        pass
+        raise NotImplementedError
 
 
 class BaseUserRepository(BaseRepository[User]):
     @abstractmethod
     async def get_by_email(self, email: str) -> User:
-        pass
+        raise NotImplementedError
 
 
 class BaseProductRepository(BaseRepository[Product]):
@@ -39,16 +39,16 @@ class BaseProductRepository(BaseRepository[Product]):
 class BaseWalletRepository(BaseRepository[Wallet]):
     @abstractmethod
     async def get_by_user_id(self, user_id: UUID) -> Wallet:
-        pass
+        raise NotADirectoryError
 
 
 class BaseTransactionRepository(BaseRepository[Transaction]):
     @abstractmethod
     async def get_by_wallet_id(self, wallet_id: UUID) -> list[Transaction]:
-        pass
+        raise NotImplementedError
 
 
-class BaseSessionRepository(BaseRepository[Session]):
+class BaseUserSessionRepository(BaseRepository[UserSession]):
     @abstractmethod
-    async def get_by_user_id(self, user_id: UUID) -> Session:
-        pass
+    async def get_by_user_id(self, user_id: UUID) -> UserSession:
+        raise NotImplementedError

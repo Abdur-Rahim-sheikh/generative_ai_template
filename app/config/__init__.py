@@ -1,4 +1,4 @@
-from .connections import drop_db, get_async_session, init_db
+from .connections import get_async_session
 from .custom_logger import app_logger, get_logger
 from .settings_config import settings
 
@@ -7,6 +7,4 @@ __all__ = [
     "get_logger",
     "app_logger",
     "get_async_session",
-    "init_db",
-    "drop_db",
 ]

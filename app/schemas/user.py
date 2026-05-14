@@ -1,3 +1,6 @@
+from datetime import datetime
+from uuid import UUID
+
 import bcrypt
 from pydantic import BaseModel, EmailStr, SecretStr
 
@@ -17,3 +20,9 @@ class CreateUserRequest(BaseUser):
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(pwd_bytes, salt)
         return hashed.decode("utf-8")
+
+
+class ReadUser(BaseUser):
+    id: UUID
+    is_active: bool
+    created_at: datetime

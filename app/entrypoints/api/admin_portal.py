@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from ...config import settings
-from ...data import CoquiTTS
+from ...adapters import CoquiTTS
 from ...tests.dummies import DummyTTS
 
 dummy_tts = DummyTTS()

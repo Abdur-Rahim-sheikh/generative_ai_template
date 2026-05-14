@@ -1,20 +1,28 @@
 import asyncio
 
-
-from ...config import app_logger
 from ...interfaces import BaseTTS
 from ...schemas.script import SpeechSegment
 
 
 class DummyTTS(BaseTTS):
+    """
+    In-process TTS double.
+
+    Simulates a small language list and returns deterministic bytes so
+    tests never need a real TTS server.
+    """
+
+    _DEFAULT_LANGUAGES = [("English", "en"), ("Bangla", "bn"), ("Arabic", "ar")]
+
     def __init__(self):
-        self.available_languages: list = []
-        self.language_codes: set = set()
+        self.available_languages: list[tuple[str, str]] = []
+        self.language_codes: set[str] = set()
+        self.synthesize_calls: list[list[SpeechSegment]] = []
 
     async def load_essentials(self):
-        await asyncio.sleep(0.5)
-        self.available_languages = [("Abir", "ab"), ("Nadia", "nd")]
-        self.language_codes = set({lang[-1] for lang in self.available_languages})
+        await asyncio.sleep(0)
+        self.available_languages = list(self._DEFAULT_LANGUAGES)
+        self.language_codes = {lang[1] for lang in self.available_languages}
 
     def has_language(self, language_code: str) -> bool:
         return language_code in self.language_codes
@@ -22,21 +30,8 @@ class DummyTTS(BaseTTS):
     async def allowed_languages(self) -> list[tuple[str, str]]:
         if not self.available_languages:
             await self.load_essentials()
-
         return self.available_languages
 
     async def synthesize(self, segments: list[SpeechSegment]) -> bytes:
-        turns = [
-            {
-                "text": segment.text,
-                "language_id": segment.language_id,
-                "gender": segment.gender,
-                "person_id": segment.person_id,
-            }
-            for segment in segments
-        ]
-        request = {"turns": turns, "stitch_delay": 0.5}
-
-        await asyncio.sleep(0.3 * len(turns))
-        app_logger.debug(f"Dummy tts received: {request}")
-        return b"dummy bytes audio"
+        self.synthesize_calls.append(segments)
+        return b"dummy audio bytes"

@@ -1,11 +1,20 @@
 from abc import ABC, abstractmethod
-
-from .base_repository import BaseProductRepository, BaseUserRepository
+from typing import Self
+from .base_repository import (
+    BaseProductRepository,
+    BaseUserRepository,
+    BaseTransactionRepository,
+    BaseUserSessionRepository,
+    BaseWalletRepository,
+)
 
 
 class BaseUnitOfWork(ABC):
     users: BaseUserRepository
     products: BaseProductRepository
+    transactions: BaseTransactionRepository
+    user_sessions: BaseUserSessionRepository
+    wallets: BaseWalletRepository
 
     @abstractmethod
     async def commit(self):
@@ -16,7 +25,11 @@ class BaseUnitOfWork(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def __aenter__(self):
+    async def flush(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def __aenter__(self) -> Self:
         raise NotImplementedError
 
     @abstractmethod

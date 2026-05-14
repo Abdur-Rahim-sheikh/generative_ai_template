@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from ..config import settings
-from ..data import OllamaLLM, CoquiTTS
+from ..adapters import OllamaLLM, CoquiTTS
 from ..tests.dummies import DummyLLM, DummyTTS
 
 from ..services import ChatService, TTSService

@@ -7,25 +7,23 @@ services:
       - 8000:8000
     develop:
       watch:
-        - path: ./app
-          action: sync
-          target: /app/app
         - path: ./pyproject.toml
           action: rebuild
           target: /app/pyproject.toml
     restart: on-failure
+    volumes:
+      - ./app:/app/app
+      - ./migrations:/app/migrations
 
   worker:
     build:
       context: .
       dockerfile: dockerfiles/Dockerfile
-    develop:
-      watch:
-        - path: ./app
-          action: restart
-          target: /app/app
-    restart: on-failure:3
 
+    restart: on-failure:3
+    volumes:
+      - ./app:/app/app
+      - ./migrations:/app/migrations
     command:
       ["/app/.venv/bin/arq", "app.entrypoints.workers.setup.WorkerSettings"]
 
