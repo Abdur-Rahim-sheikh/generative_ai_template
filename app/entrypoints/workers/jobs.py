@@ -1,7 +1,7 @@
 import uuid
 
 from ...config import app_logger, settings
-from ...data import ComfyClient
+from ...adapters import ComfyClient
 from ...tests.dummies import DummyComfyClient
 from ...services import WorkflowGenerator
 
