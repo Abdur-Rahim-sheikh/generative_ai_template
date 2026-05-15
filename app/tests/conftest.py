@@ -10,5 +10,5 @@ def fake_uow() -> FakeUnitOfWork:
 
 
 @pytest.fixture
-def fake_billing_service() -> BillingService:
+def fake_billing_service(fake_uow: FakeUnitOfWork) -> BillingService:
     return BillingService(uow=fake_uow)

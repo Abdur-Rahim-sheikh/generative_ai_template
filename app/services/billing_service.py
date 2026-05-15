@@ -11,16 +11,19 @@ class BillingService:
     async def transact(self, wallet_id: UUID, product_id: UUID):
 
         async with self.uow as uow:
-            product = await uow.products.get(product_id)
             wallet = await uow.wallets.get(wallet_id)
-            if not product:
-                raise NotFound(f"Product not found with {product_id=}")
+
+            product = await uow.products.get(product_id)
+
             if not wallet:
                 raise NotFound(f"Wallet not found with {wallet_id=}")
 
+            if not product:
+                raise NotFound(f"Product not found with {product_id=}")
+
             if wallet.free_uses_remaining >= product.coin_cost:
                 wallet.free_uses_remaining -= product.coin_cost
-            elif wallet.coint_balance >= product.coin_cost:
+            elif wallet.coin_balance >= product.coin_cost:
                 wallet.coin_balance -= product.coin_cost
             else:
                 raise InsufficientFunds("Insufficient coin to process")
