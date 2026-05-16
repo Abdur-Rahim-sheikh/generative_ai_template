@@ -2,11 +2,14 @@ from typing import Literal
 
 from ..interfaces import BaseLLM
 from ..schemas.chat import BaseInformation, ChatResponse, EnhancedTextList
+from .billing_service import BillingService
+from uuid import UUID
 
 
 class ChatService:
-    def __init__(self, llm: BaseLLM):
+    def __init__(self, llm: BaseLLM, billing: BillingService):
         self.llm = llm
+        self.billing = billing
         self.monologue_system = """You are a professional product marketing copywriter.
 
 Your task:
@@ -46,6 +49,8 @@ Rules:
 
     async def make_script(
         self,
+        wallet_id: UUID,
+        product_id: UUID,
         product: str,
         goal: str,
         audience: str,
@@ -56,6 +61,8 @@ Rules:
         forbid: str = "",
         format: Literal["monologue", "dialogue"] = "monologue",
     ) -> ChatResponse:
+        await self.billing.transact(wallet_id=wallet_id, product_id=product_id)
+
         if format == "monologue":
             text = (
                 f"Product: {product}\n"
