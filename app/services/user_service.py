@@ -10,9 +10,12 @@ class UserService:
     def __init__(self, uow: BaseUnitOfWork):
         self.uow = uow
 
-    async def create_user(self, data: CreateUserRequest) -> User:
+    async def create_user(
+        self, data: CreateUserRequest, initial_free_uses: int = 50
+    ) -> User:
         async with self.uow as uow:
             new_user = User(
+                id=None,
                 first_name=data.first_name,
                 last_name=data.last_name,
                 email=data.email,
@@ -20,7 +23,7 @@ class UserService:
             )
             await uow.users.save(new_user)
 
-            new_wallet = Wallet(user=new_user, free_uses_remaining=50)
+            new_wallet = Wallet(user=new_user, free_uses_remaining=initial_free_uses)
 
             await uow.wallets.save(new_wallet)
             return new_user

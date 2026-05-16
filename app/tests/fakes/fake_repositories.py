@@ -1,7 +1,7 @@
+from typing import Generic, TypeVar
 from uuid import UUID, uuid4
 
 from ...domain.models import Product, Transaction, User, UserSession, Wallet
-from ...domain.exceptions import AlreadyExists
 from ...interfaces.base_repository import (
     BaseProductRepository,
     BaseTransactionRepository,
@@ -10,7 +10,6 @@ from ...interfaces.base_repository import (
     BaseWalletRepository,
 )
 from ...interfaces.base_uow import BaseUnitOfWork
-from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -20,12 +19,9 @@ class GenericFakeRepository(Generic[T]):
         self._storage: dict[UUID, T] = {}
 
     async def save(self, data: T):
-        print(data.id)
-        if data.id and data.id not in self._storage:
-            raise AlreadyExists("This id already exists")
-
         if not data.id:
             data.id = uuid4()
+
         self._storage[data.id] = data
 
     async def get(self, id: UUID) -> T | None:

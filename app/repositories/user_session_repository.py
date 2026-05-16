@@ -13,7 +13,7 @@ class UserSessionRepository(BaseUserSessionRepository):
     async def save(self, data: UserSession) -> UserSession:
         try:
             self.session.add(data)
-            self.session.flush()
+            await self.session.flush()
         except IntegrityError:
             raise AlreadyExists("This session already exists")
 

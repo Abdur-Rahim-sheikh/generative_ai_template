@@ -12,7 +12,7 @@ class ProductRepository(BaseProductRepository):
     async def save(self, data: Product):
         try:
             self.session.add(data)
-            self.session.flush()
+            await self.session.flush()
         except IntegrityError:
             raise AlreadyExists("The Product already exists with this title")
 

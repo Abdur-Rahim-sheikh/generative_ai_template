@@ -9,7 +9,7 @@ from ..interfaces.base_repository import BaseTransactionRepository
 class TransactionRepository(BaseTransactionRepository):
     async def save(self, data: Transaction):
         self.session.add(data)
-        self.session.flush()
+        await self.session.flush()
 
     async def get(self, id: UUID) -> Transaction | None:
         transaction = await self.session.get(UUID, id)

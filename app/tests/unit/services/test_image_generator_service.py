@@ -1,11 +1,12 @@
+from unittest.mock import AsyncMock
+
 import pytest
 
+from ....domain.exceptions import InsufficientFunds, NotFound
+from ....domain.models import Product, Wallet
 from ....services import BillingService, ImageService
 from ....utils.image import decode_base64_to_image
 from ...dummies import DummyImageGenerator
-from ....domain.exceptions import InsufficientFunds, NotFound
-from ....domain.models import Wallet, Product
-from ...fakes import FakeUnitOfWork
 
 
 class TestImageGenerationService:
@@ -79,9 +80,89 @@ class TestImageGenerationService:
 
         assert len(images) == 1
         current_wallet = await image_service.billing.uow.wallets.get(wallet.id)
-        print(current_wallet, wallet)
-        print(current_wallet.id, wallet.id)
-        print(image_service.billing.uow.wallets.wallets)
-        assert 1 == 2
+
+        assert current_wallet.coin_balance == COIN_BALANCE - COIN_COST
+        assert current_wallet.free_uses_remaining == FREE_USES_REMAINING
+
+    async def test_happy_image_generation_with_free_coin(
+        self, image_service: ImageService
+    ):
+
+        COIN_BALANCE = 50
+        FREE_USES_REMAINING = 5
+        wallet = Wallet(
+            user_id="USERID",
+            coin_balance=COIN_BALANCE,
+            free_uses_remaining=FREE_USES_REMAINING,
+        )
+        await image_service.billing.uow.wallets.save(data=wallet)
+
+        COIN_COST = 5
+        product = Product(title="LLM-custom", coin_cost=COIN_COST, unit="second")
+        await image_service.billing.uow.products.save(data=product)
+
+        images = await image_service.generate_realistic_image(
+            wallet_id=wallet.id, product_id=product.id, prompt="TEMP", width=1, height=1
+        )
+
+        assert len(images) == 1
+        current_wallet = await image_service.billing.uow.wallets.get(wallet.id)
+
+        assert current_wallet.coin_balance == COIN_BALANCE
+        assert current_wallet.free_uses_remaining == FREE_USES_REMAINING - COIN_COST
+
+    async def test_insufficient_balance_exception(self, image_service: ImageService):
+        COIN_BALANCE = 50
+        FREE_USES_REMAINING = 5
+        wallet = Wallet(
+            user_id="USERID",
+            coin_balance=COIN_BALANCE,
+            free_uses_remaining=FREE_USES_REMAINING,
+        )
+        await image_service.billing.uow.wallets.save(data=wallet)
+
+        COIN_COST = 60
+        product = Product(title="LLM-custom", coin_cost=COIN_COST, unit="second")
+        await image_service.billing.uow.products.save(data=product)
+        with pytest.raises(InsufficientFunds):
+            await image_service.generate_realistic_image(
+                wallet_id=wallet.id,
+                product_id=product.id,
+                prompt="TEMP",
+                width=1,
+                height=1,
+            )
+        assert wallet.coin_balance == COIN_BALANCE
+        assert wallet.free_uses_remaining == FREE_USES_REMAINING
+
+    async def test_generator_failure_does_not_revert_billing(
+        self, image_service: ImageService
+    ):
+        COIN_BALANCE = 50
+        FREE_USES_REMAINING = 5
+        wallet = Wallet(
+            user_id="USERID",
+            coin_balance=COIN_BALANCE,
+            free_uses_remaining=FREE_USES_REMAINING,
+        )
+        await image_service.billing.uow.wallets.save(data=wallet)
+
+        COIN_COST = 30
+        product = Product(title="LLM-custom", coin_cost=COIN_COST, unit="second")
+        await image_service.billing.uow.products.save(data=product)
+
+        # mocking the generator
+        image_service.image_generator.generate = AsyncMock(
+            side_effect=Exception("Inappropriate prompt")
+        )
+        with pytest.raises(Exception, match="Inappropriate prompt"):
+            await image_service.generate_realistic_image(
+                wallet_id=wallet.id,
+                product_id=product.id,
+                prompt="TEMP",
+                width=1,
+                height=1,
+            )
+        current_wallet = await image_service.billing.uow.wallets.get(wallet.id)
         assert current_wallet.coin_balance == COIN_BALANCE - COIN_COST
         assert current_wallet.free_uses_remaining == FREE_USES_REMAINING
