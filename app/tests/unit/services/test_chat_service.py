@@ -15,7 +15,7 @@ def llm() -> DummyLLM:
 
 
 @pytest.fixture
-def chat_service(llm, billing_service: BillingService) -> ChatService:
+def chat_service(llm: DummyLLM, billing_service: BillingService) -> ChatService:
     return ChatService(llm=llm, billing=billing_service)
 
 

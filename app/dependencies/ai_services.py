@@ -4,7 +4,11 @@ from ..config import settings
 from ..adapters import OllamaLLM, CoquiTTS, ComfyImage, ComfyClient
 from ..tests.dummies import DummyLLM, DummyTTS
 
-from ..services import ChatService, TTSService, ImageService
+from ..services import ChatService, TTSService, ImageService, BillingService
+
+
+def get_billing_service():
+    return BillingService()
 
 
 def get_llm():
@@ -26,16 +30,18 @@ def get_comfy_image() -> ComfyImage:
 
 
 def get_chat_service(llm=Depends(get_llm)):
-    return ChatService(llm)
+    return ChatService(llm, billing=get_billing_service())
 
 
 def get_tts_service(tts=Depends(get_tts)):
-    return TTSService(tts)
+    return TTSService(tts, billing=get_billing_service())
 
 
 # these are jobqueue, so removing depends methods
 def get_custom_image_service() -> ImageService:
-    return ImageService(image_generator=get_comfy_image())
+    return ImageService(
+        image_generator=get_comfy_image(), billing=get_billing_service()
+    )
 
 
 def get_premium_image_service():
