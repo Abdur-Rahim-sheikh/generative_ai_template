@@ -1,53 +1,85 @@
-from fastapi import Depends
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..adapters import ComfyClient, ComfyImage, CoquiTTS, OllamaLLM
 from ..config import settings
-from ..adapters import OllamaLLM, CoquiTTS, ComfyImage, ComfyClient
+from ..config.connections import get_async_session, async_session_maker
+from ..repositories import UnitOfWork
+from ..services import BillingService, ChatService, ImageService, TTSService
 from ..tests.dummies import DummyLLM, DummyTTS
 
-from ..services import ChatService, TTSService, ImageService, BillingService
 
-
-def get_billing_service():
-    return BillingService()
-
-
-def get_llm():
+def make_llm():
     if settings.USE_DUMMY_SERVICES:
         return DummyLLM()
     return OllamaLLM()
 
 
-def get_tts():
+def make_tts():
     if settings.USE_DUMMY_SERVICES:
         return DummyTTS()
     return CoquiTTS()
 
 
-def get_comfy_image() -> ComfyImage:
+def make_comfy_image() -> ComfyImage:
     return ComfyImage(
         client=ComfyClient(host=settings.COMFY_HOST, port=settings.COMFY_PORT)
     )
 
 
-def get_chat_service(llm=Depends(get_llm)):
-    return ChatService(llm, billing=get_billing_service())
+def make_billing_service(session: AsyncSession) -> BillingService:
+    uow = UnitOfWork(session=session)
+    return BillingService(uow=uow)
 
 
-def get_tts_service(tts=Depends(get_tts)):
-    return TTSService(tts, billing=get_billing_service())
+# Service making starts here
 
 
-# these are jobqueue, so removing depends methods
-def get_custom_image_service() -> ImageService:
+def make_chat_service(session: AsyncSession) -> ChatService:
+    return ChatService(llm=make_llm(), billing=make_billing_service(session))
+
+
+def make_tts_service(session: AsyncSession) -> TTSService:
+    return TTSService(tts=make_tts(), billing=make_billing_service(session))
+
+
+def make_custom_image_service(session: AsyncSession) -> ImageService:
     return ImageService(
-        image_generator=get_comfy_image(), billing=get_billing_service()
+        image_generator=make_comfy_image(),
+        billing=make_billing_service(session=session),
     )
 
 
-def get_premium_image_service():
+def make_premium_image_service(session: AsyncSession) -> ImageService:
     pass
 
 
-def get_image_service() -> ImageService:
-    # if else block when we connect the premium one
-    return get_custom_image_service()
+def make_image_service(session: AsyncSession, premium: bool = False) -> ImageService:
+    if premium:
+        return make_premium_image_service(session=session)
+
+    return make_custom_image_service(session=session)
+
+
+# Finally, the dependency getters for FastAPI
+def get_chat_service(session: AsyncSession = Depends(get_async_session)) -> ChatService:
+    return make_chat_service(session=session)
+
+
+def get_tts_service(session: AsyncSession = Depends(get_async_session)) -> TTSService:
+    return make_tts_service(session=session)
+
+
+# for ARQ workers
+
+
+@asynccontextmanager
+async def image_service_worker_ctx(
+    premium: bool = False,
+) -> AsyncGenerator[ImageService, None]:
+    async with async_session_maker() as session:
+        image_service = make_image_service(session=session, premium=premium)
+        yield image_service

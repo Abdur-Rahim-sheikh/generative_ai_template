@@ -15,6 +15,9 @@ router = APIRouter()
 async def enqueue_product_image(
     request: PromptAndImageToImageRequest, queue: ArqRedis = Depends(get_job_queue)
 ):
+    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
+    product_id = "123e4567-e89b-12d3-a456-426614174001"
+
     image = decode_base64_to_bytes(b64=request.base64_image)
     prompt = (
         "Keep the product geometry, branding, and color unchanged. Remove the original background entirely."
@@ -22,6 +25,8 @@ async def enqueue_product_image(
     )
     job = await queue.enqueue_job(
         "product_photography",
+        wallet_id,
+        product_id,
         image,
         prompt,
         request.width,
@@ -36,8 +41,12 @@ async def enqueue_product_image(
 async def enqueue_realistic_image(
     request: PromptToImageRequest, queue: ArqRedis = Depends(get_job_queue)
 ):
+    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
+    product_id = "123e4567-e89b-12d3-a456-426614174001"
     job = await queue.enqueue_job(
         "realistic_image",
+        wallet_id,
+        product_id,
         request.prompt,
         request.width,
         request.height,
