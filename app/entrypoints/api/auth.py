@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from ...services import UserService
+
 from ...dependencies.database_services import get_user_service
-from typing import Annotated
+from ...services import UserService
 
 router = APIRouter()
 
