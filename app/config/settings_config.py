@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     COMFY_HOST: str
     COMFY_PORT: int
 
+    # jwt config
+    JWT_SECRET_KEY: SecretStr = "supersecretkey"
+    JWT_ALGORITHM: str = "HS256"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
