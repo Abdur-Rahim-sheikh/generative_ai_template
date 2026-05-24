@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 
 from ...dependencies.database_services import get_user_service, get_user_session_service
 from ...services import UserService, UserSessionService
 
 router = APIRouter()
-
-OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="login")
 
 
 @router.post("/login")
@@ -47,10 +45,11 @@ async def login(
 
 @router.post("/logout")
 async def logout(
-    refresh_token: str = Depends(OAUTH2_SCHEME),
+    refresh_token: str | None = Cookie(default=None),
     user_session_service: UserSessionService = Depends(get_user_session_service),
 ):
-    await user_session_service.delete_user_session(refresh_token)
+    if refresh_token:
+        await user_session_service.delete_user_session(refresh_token)
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     response.delete_cookie(key="refresh_token")
     return response
@@ -58,7 +57,7 @@ async def logout(
 
 @router.post("/refresh")
 async def refresh_jwt_token(
-    refresh_token: str = Depends(OAUTH2_SCHEME),
+    refresh_token: str | None = Cookie(default=None),
     user_session_service: UserSessionService = Depends(get_user_session_service),
     user_service: UserService = Depends(get_user_service),
 ):
@@ -70,7 +69,8 @@ async def refresh_jwt_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = await user_service.get_user_by_id(session.user_id)
+    user = await user_service.get_user(session.user_id)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"

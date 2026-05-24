@@ -1,5 +1,6 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from fastapi.security import OAuth2PasswordBearer
 
 
 class Settings(BaseSettings):
@@ -39,3 +40,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
