@@ -74,7 +74,7 @@ async def get_status(job_id: str, queue: ArqRedis = Depends(get_job_queue)):
         message = "Something went wrong during processing"
         if result_info.success:
             message = "Image processed successfully"
-            results = result_info.results
+            results = result_info.result
             results = [auto_watermark(r) for r in results]
 
     return StatusResponse(status=status, message=message, results=results)

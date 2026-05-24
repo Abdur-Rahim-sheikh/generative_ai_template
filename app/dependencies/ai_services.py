@@ -9,7 +9,7 @@ from ..config import settings
 from ..config.connections import get_async_session, async_session_maker
 from ..repositories import UnitOfWork
 from ..services import BillingService, ChatService, ImageService, TTSService
-from ..tests.dummies import DummyLLM, DummyTTS
+from ..tests.dummies import DummyLLM, DummyTTS, DummyImageGenerator
 
 
 def make_llm():
@@ -25,6 +25,8 @@ def make_tts():
 
 
 def make_comfy_image() -> ComfyImage:
+    if settings.USE_DUMMY_SERVICES:
+        return DummyImageGenerator()
     return ComfyImage(
         client=ComfyClient(host=settings.COMFY_HOST, port=settings.COMFY_PORT)
     )
