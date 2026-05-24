@@ -4,8 +4,10 @@ from pydantic import BaseModel
 
 from ...interfaces import BaseLLM
 from polyfactory.factories.pydantic_factory import ModelFactory
+from ...utils.decorators import singleton
 
 
+@singleton
 class DummyLLM(BaseLLM):
     """
     Synchronous, zero-latency LLM double for unit tests.

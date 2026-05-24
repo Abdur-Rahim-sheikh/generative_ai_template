@@ -54,7 +54,7 @@ async def generate_script(
     try:
         return await chat_service.make_script(
             wallet_id=wallet_id,
-            product_title=ProductTitle.SCRIPT,
+            product_title=ProductTitle.GENERATED_SCRIPT,
             product=request.product,
             goal=request.goal,
             audience=request.audience,

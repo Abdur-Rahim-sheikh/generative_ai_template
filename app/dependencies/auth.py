@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 
@@ -22,8 +21,8 @@ def decode_access_token(
     try:
         payload = security.decode_access_token(token)
         return payload
-    except Exception as e:
-        raise exception(str(e))
+    except Exception:
+        raise exception
 
 
 def get_user_wallet_id(

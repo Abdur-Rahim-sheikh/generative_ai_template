@@ -3,8 +3,10 @@ import httpx
 from ..config import app_logger
 from ..interfaces import BaseTTS
 from ..schemas.script import SpeechSegment
+from ..utils.decorators import singleton
 
 
+@singleton
 class CoquiTTS(BaseTTS):
     def __init__(self, host: str, port: int, timeout: int = 120):
         self.url = f"http://{host}:{port}"

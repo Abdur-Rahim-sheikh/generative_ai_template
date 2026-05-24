@@ -2,8 +2,11 @@ import asyncio
 
 from ...interfaces import BaseTTS
 from ...schemas.script import SpeechSegment
+from ...config import app_logger
+from ...utils.decorators import singleton
 
 
+@singleton
 class DummyTTS(BaseTTS):
     """
     In-process TTS double.
@@ -25,6 +28,9 @@ class DummyTTS(BaseTTS):
         self.language_codes = {lang[1] for lang in self.available_languages}
 
     def has_language(self, language_code: str) -> bool:
+        app_logger.debug(
+            f"Checking if language code '{language_code}' is supported. in {self.language_codes=}"
+        )
         return language_code in self.language_codes
 
     async def allowed_languages(self) -> list[tuple[str, str]]:

@@ -30,7 +30,7 @@ class BillingService:
             await uow.wallets.save(wallet)
             tx = Transaction(
                 wallet_id=wallet_id,
-                product_id=product_title,
+                product_id=product.id,
                 amount=product.coin_cost,
                 type="credit",
             )
