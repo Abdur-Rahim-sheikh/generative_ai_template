@@ -17,7 +17,7 @@ async def realistic_image(
     async with image_service_worker_ctx() as image_service:
         return await image_service.generate_realistic_image(
             wallet_id=wallet_id,
-            product_id=product_id,
+            product_title=product_id,
             prompt=prompt,
             width=width,
             height=height,
@@ -38,7 +38,7 @@ async def product_photography(
     async with image_service_worker_ctx() as image_service:
         return await image_service.generate_product_image(
             wallet_id=wallet_id,
-            product_id=product_id,
+            product_title=product_id,
             reference_image=reference_image,
             prompt=prompt,
             width=width,

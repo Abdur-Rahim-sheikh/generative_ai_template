@@ -40,7 +40,7 @@ class TestTTSServiceGenerate:
         wallet, product = await seeded_db()
         segments = [make_segment("Test", "en")]
         await tts_service.generate_tts(
-            wallet_id=wallet.id, product_id=product.id, segments=segments
+            wallet_id=wallet.id, product_title=product.id, segments=segments
         )
         assert len(tts.synthesize_calls) == 1
 

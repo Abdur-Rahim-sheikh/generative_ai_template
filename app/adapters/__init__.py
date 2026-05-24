@@ -2,6 +2,7 @@ from .comfy_client import ComfyClient
 from .comfy_image import ComfyImage
 from .coqui_tts import CoquiTTS
 from .ollama_llm import OllamaLLM
+from .security import Security
 
 __all__ = [
     "OllamaLLM",
@@ -10,4 +11,5 @@ __all__ = [
     "ElevenlabTTS",
     "ComfyImage",
     "ComfyClient",
+    "Security",
 ]

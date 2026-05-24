@@ -27,7 +27,7 @@ async def test_make_script_returns_chat_response(
 
     response = await chat_service.make_script(
         wallet_id="test-wallet-id",
-        product_id="test-product-id",
+        product_title="test-product-id",
         product="SuperApp",
         goal="increase downloads",
         audience="millennials",
@@ -46,7 +46,7 @@ async def test_make_script_monologue_has_single_dialogue_entry(
     await seeded_db()
     response = await chat_service.make_script(
         wallet_id="test-wallet-id",
-        product_id="test-product-id",
+        product_title="test-product-id",
         product="X",
         goal="Y",
         audience="Z",
@@ -72,7 +72,7 @@ async def test_make_script_uses_respective_methods(
     await seeded_db()
     await chat_service.make_script(
         wallet_id="test-wallet-id",
-        product_id="test-product-id",
+        product_title="test-product-id",
         product="X",
         goal="Y",
         audience="Z",
@@ -92,7 +92,7 @@ async def test_system_prompt_is_sent(
     await seeded_db()
     await chat_service.make_script(
         wallet_id="test-wallet-id",
-        product_id="test-product-id",
+        product_title="test-product-id",
         product="X",
         goal="Y",
         audience="Z",
@@ -113,7 +113,7 @@ async def test_generated_prompt_contains_all_fields(
     await seeded_db()
     await chat_service.make_script(
         wallet_id="test-wallet-id",
-        product_id="test-product-id",
+        product_title="test-product-id",
         product="MyCoolProduct",
         goal="Y",
         audience="Z",
@@ -193,7 +193,7 @@ async def test_generator_failure_does_not_revert_billing(
     with pytest.raises(Exception, match="Inappropriate prompt"):
         await chat_service.make_script(
             wallet_id=wallet.id,
-            product_id=product.id,
+            product_title=product.id,
             product="MyCoolProduct",
             goal="Y",
             audience="Z",

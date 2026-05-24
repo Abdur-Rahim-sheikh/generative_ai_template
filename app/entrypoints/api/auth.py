@@ -15,12 +15,16 @@ async def login(
     user_session_service: UserSessionService = Depends(get_user_session_service),
 ):
     user = await user_service.get_user_by_email(form_data.username)
-    if not user or not user_service.security.verify_password(
-        form_data.password, user.hashed_password
+    if (
+        not user
+        or not user.is_active
+        or not user_service.security.verify_password(
+            form_data.password, user.hashed_password
+        )
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect email or password or inactive user",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -71,9 +75,9 @@ async def refresh_jwt_token(
 
     user = await user_service.get_user(session.user_id)
 
-    if not user:
+    if not user or not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found or inactive"
         )
 
     access_token = user_service.security.encode_access_token(

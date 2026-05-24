@@ -52,7 +52,11 @@ class TestImageGenerationService:
         )
 
         images = await image_service.generate_realistic_image(
-            wallet_id=wallet.id, product_id=product.id, prompt="TEMP", width=1, height=1
+            wallet_id=wallet.id,
+            product_title=product.id,
+            prompt="TEMP",
+            width=1,
+            height=1,
         )
 
         assert len(images) == 1
@@ -75,7 +79,11 @@ class TestImageGenerationService:
         )
 
         images = await image_service.generate_realistic_image(
-            wallet_id=wallet.id, product_id=product.id, prompt="TEMP", width=1, height=1
+            wallet_id=wallet.id,
+            product_title=product.id,
+            prompt="TEMP",
+            width=1,
+            height=1,
         )
 
         assert len(images) == 1
@@ -104,7 +112,7 @@ class TestImageGenerationService:
         with pytest.raises(Exception, match="Inappropriate prompt"):
             await image_service.generate_realistic_image(
                 wallet_id=wallet.id,
-                product_id=product.id,
+                product_title=product.id,
                 prompt="TEMP",
                 width=1,
                 height=1,

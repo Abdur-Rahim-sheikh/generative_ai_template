@@ -7,16 +7,19 @@ from ...schemas.common import JobResponse, StatusResponse
 from ...schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
 from ...utils.image import decode_base64_to_bytes
 from ...utils.watermark import auto_watermark
+from ...dependencies.auth import get_user_wallet_id
+from typing import Annotated
+from ...config import ProductTitle
 
 router = APIRouter()
 
 
 @router.post("/product-image/enqueue")
 async def enqueue_product_image(
-    request: PromptAndImageToImageRequest, queue: ArqRedis = Depends(get_job_queue)
+    request: PromptAndImageToImageRequest,
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
+    queue: ArqRedis = Depends(get_job_queue),
 ):
-    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
-    product_id = "123e4567-e89b-12d3-a456-426614174001"
 
     image = decode_base64_to_bytes(b64=request.base64_image)
     prompt = (
@@ -26,7 +29,7 @@ async def enqueue_product_image(
     job = await queue.enqueue_job(
         "product_photography",
         wallet_id,
-        product_id,
+        ProductTitle.PRODUCT_IMAGE,
         image,
         prompt,
         request.width,
@@ -39,14 +42,14 @@ async def enqueue_product_image(
 
 @router.post("/realistic-image/enqueue")
 async def enqueue_realistic_image(
-    request: PromptToImageRequest, queue: ArqRedis = Depends(get_job_queue)
+    request: PromptToImageRequest,
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
+    queue: ArqRedis = Depends(get_job_queue),
 ):
-    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
-    product_id = "123e4567-e89b-12d3-a456-426614174001"
     job = await queue.enqueue_job(
         "realistic_image",
         wallet_id,
-        product_id,
+        ProductTitle.REALISTIC_IMAGE,
         request.prompt,
         request.width,
         request.height,

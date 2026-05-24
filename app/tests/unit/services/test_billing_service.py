@@ -34,7 +34,7 @@ async def test_insufficient_balance_exception(
     with pytest.raises(InsufficientFunds):
         await billing_service.transact(
             wallet_id=wallet.id,
-            product_id=product.id,
+            product_title=product.id,
         )
 
     assert wallet.coin_balance == COIN_BALANCE
@@ -53,5 +53,5 @@ async def test_happy_path(billing_service: BillingService, seeded_db: SeedDbFact
 
     await billing_service.transact(
         wallet_id=wallet.id,
-        product_id=product.id,
+        product_title=product.id,
     )

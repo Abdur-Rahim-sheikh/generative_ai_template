@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.responses import Response
@@ -6,13 +7,15 @@ from fastapi.responses import Response
 from ...config import app_logger
 from ...dependencies.ai_services import (
     get_chat_service,
+    get_tts_service,
     make_llm,
     make_tts,
-    get_tts_service,
 )
+from ...dependencies.auth import get_user_wallet_id
 from ...schemas.chat import ChatRequest, ChatResponse
 from ...schemas.script import ScriptRequest
 from ...services import ChatService, TTSService
+from ...config import ProductTitle
 
 
 @asynccontextmanager
@@ -33,10 +36,10 @@ router = APIRouter(lifespan=lifespan)
 
 @router.post("/generate-script")
 async def generate_script(
-    request: ChatRequest, chat_service: ChatService = Depends(get_chat_service)
+    request: ChatRequest,
+    chat_service: Annotated[ChatService, Depends(get_chat_service)],
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
 ) -> ChatResponse:
-    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
-    product_id = "123e4567-e89b-12d3-a456-426614174001"
     words = 40  # if short
     if request.duration == "medium":
         words = 60
@@ -51,7 +54,7 @@ async def generate_script(
     try:
         return await chat_service.make_script(
             wallet_id=wallet_id,
-            product_id=product_id,
+            product_title=ProductTitle.SCRIPT,
             product=request.product,
             goal=request.goal,
             audience=request.audience,
@@ -72,11 +75,10 @@ async def generate_script(
 @router.post("/generate-tts")
 async def generate_tts(
     request: ScriptRequest,
-    tts_service: TTSService = Depends(get_tts_service),
-    chat_service: ChatService = Depends(get_chat_service),
+    tts_service: Annotated[TTSService, Depends(get_tts_service)],
+    chat_service: Annotated[ChatService, Depends(get_chat_service)],
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
 ):
-    wallet_id = "123e4567-e89b-12d3-a456-426614174000"
-    product_id = "123e4567-e89b-12d3-a456-426614174001"
     if request.enhance_text:
         need_enhanced = [segment.text for segment in request.segments]
 
@@ -93,7 +95,9 @@ async def generate_tts(
 
     try:
         audio = await tts_service.generate_tts(
-            wallet_id=wallet_id, product_id=product_id, segments=request.segments
+            wallet_id=wallet_id,
+            product_title=ProductTitle.GENERATED_TTS,
+            segments=request.segments,
         )
     except Exception as e:
         msg = f"service {e}"

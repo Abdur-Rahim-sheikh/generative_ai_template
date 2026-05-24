@@ -69,9 +69,9 @@ class TTSService:
         return result
 
     async def generate_tts(
-        self, wallet_id: UUID, product_id: UUID, segments: list[SpeechSegment]
+        self, wallet_id: UUID, product_title: str, segments: list[SpeechSegment]
     ) -> bytes:
-        await self.billing.transact(wallet_id=wallet_id, product_id=product_id)
+        await self.billing.transact(wallet_id=wallet_id, product_title=product_title)
 
         for idx, segment in enumerate(segments):
             if not self.tts.has_language(segment.language_id):

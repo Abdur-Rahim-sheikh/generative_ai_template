@@ -11,13 +11,13 @@ class ImageService:
     async def generate_realistic_image(
         self,
         wallet_id: UUID,
-        product_id: UUID,
+        product_title: str,
         prompt: str,
         width: int,
         height: int,
         batch: int = 1,
     ) -> list[str]:
-        await self.billing.transact(wallet_id=wallet_id, product_id=product_id)
+        await self.billing.transact(wallet_id=wallet_id, product_title=product_title)
 
         return await self.image_generator.generate(
             prompt=prompt, width=width, height=height, batch=batch
@@ -26,14 +26,14 @@ class ImageService:
     async def generate_product_image(
         self,
         wallet_id: UUID,
-        product_id: UUID,
+        product_title: str,
         prompt: str,
         reference_image: bytes,
         width: int,
         height: int,
         batch: int = 1,
     ) -> list[str]:
-        await self.billing.transact(wallet_id=wallet_id, product_id=product_id)
+        await self.billing.transact(wallet_id=wallet_id, product_title=product_title)
 
         return await self.image_generator.edit(
             prompt=prompt,

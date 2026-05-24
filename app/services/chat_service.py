@@ -50,7 +50,7 @@ Rules:
     async def make_script(
         self,
         wallet_id: UUID,
-        product_id: UUID,
+        product_title: str,
         product: str,
         goal: str,
         audience: str,
@@ -61,7 +61,7 @@ Rules:
         forbid: str = "",
         format: Literal["monologue", "dialogue"] = "monologue",
     ) -> ChatResponse:
-        await self.billing.transact(wallet_id=wallet_id, product_id=product_id)
+        await self.billing.transact(wallet_id=wallet_id, product_title=product_title)
 
         if format == "monologue":
             text = (
