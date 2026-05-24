@@ -43,6 +43,8 @@ services:
       - POSTGRES_DB=$DB_NAME
     ports:
       - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql
 
   # pgadmin:
   #   image: dpage/pgadmin4:latest
@@ -64,5 +66,6 @@ services:
 #     depends_on:
 #       - db
 
-# volumes:
-#   cloudbeaver_data:
+volumes:
+  # cloudbeaver_data:
+  pgdata:

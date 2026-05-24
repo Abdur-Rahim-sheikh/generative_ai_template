@@ -94,10 +94,8 @@ class UserSession(SQLModel, table=True):
     id: PrimaryKey
 
     user_id: UUID | None = Field(
-        foreign_key="user.id", unique=True, nullable=False, ondelete="CASCADE"
+        foreign_key="user.id", index=True, nullable=False, ondelete="CASCADE"
     )
-
-    last_activity_at: TimeStampUpdate
     expires_at: datetime = Field(sa_type=TIMESTAMP(timezone=True))
 
     user: User = Relationship(back_populates="user_session")

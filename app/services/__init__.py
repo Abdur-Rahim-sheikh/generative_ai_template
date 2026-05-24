@@ -4,6 +4,7 @@ from .image_service import ImageService
 from .product_service import ProductService
 from .tts_service import TTSService
 from .user_service import UserService
+from .user_session_service import UserSessionService
 
 __all__ = [
     "ChatService",
@@ -12,4 +13,5 @@ __all__ = [
     "ProductService",
     "ImageService",
     "BillingService",
+    "UserSessionService",
 ]
