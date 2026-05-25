@@ -6,30 +6,44 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..adapters import ComfyClient, ComfyImage, CoquiTTS, OllamaLLM
 from ..config import settings
-from ..config.connections import get_async_session, async_session_maker
+from ..config.connections import async_session_maker, get_async_session
 from ..repositories import UnitOfWork
 from ..services import BillingService, ChatService, ImageService, TTSService
-from ..tests.dummies import DummyLLM, DummyTTS, DummyImageGenerator
+from ..tests.dummies import DummyImageGenerator, DummyLLM, DummyTTS
+
+_ADAPTER_CACHE: dict[str, object] = {}
 
 
 def make_llm():
+    if "llm" in _ADAPTER_CACHE:
+        return _ADAPTER_CACHE["llm"]
+
     if settings.USE_DUMMY_SERVICES:
-        return DummyLLM()
-    return OllamaLLM()
+        _ADAPTER_CACHE["llm"] = DummyLLM()
+    _ADAPTER_CACHE["llm"] = OllamaLLM()
+    return _ADAPTER_CACHE["llm"]
 
 
 def make_tts():
+    if "tts" in _ADAPTER_CACHE:
+        return _ADAPTER_CACHE["tts"]
+
     if settings.USE_DUMMY_SERVICES:
-        return DummyTTS()
-    return CoquiTTS()
+        _ADAPTER_CACHE["tts"] = DummyTTS()
+    _ADAPTER_CACHE["tts"] = CoquiTTS()
+    return _ADAPTER_CACHE["tts"]
 
 
 def make_comfy_image() -> ComfyImage:
+    if "comfy_image" in _ADAPTER_CACHE:
+        return _ADAPTER_CACHE["comfy_image"]
+
     if settings.USE_DUMMY_SERVICES:
-        return DummyImageGenerator()
-    return ComfyImage(
+        _ADAPTER_CACHE["comfy_image"] = DummyImageGenerator()
+    _ADAPTER_CACHE["comfy_image"] = ComfyImage(
         client=ComfyClient(host=settings.COMFY_HOST, port=settings.COMFY_PORT)
     )
+    return _ADAPTER_CACHE["comfy_image"]
 
 
 def make_billing_service(session: AsyncSession) -> BillingService:

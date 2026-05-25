@@ -1,22 +1,17 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from pwdlib import PasswordHash
+
+from ..utils import singleton
 
 
-class Security:
+@singleton
+class JwtManager:
     def __init__(self, secret_key: str, algorithm: str):
-        self.password_hasher = PasswordHash.recommended()
         self.secret_key = secret_key
         self.algorithm = algorithm
 
-    def hash_password(self, password: str) -> str:
-        return self.password_hasher.hash(password)
-
-    def verify_password(self, password: str, hashed: str) -> bool:
-        return self.password_hasher.verify(password, hashed)
-
-    def encode_access_token(
+    def encode(
         self, data: dict, expires_delta: timedelta = timedelta(minutes=10)
     ) -> str:
         to_encode = data.copy()
@@ -27,7 +22,7 @@ class Security:
             algorithm=self.algorithm,
         )
 
-    def decode_access_token(self, token: str) -> dict:
+    def decode(self, token: str) -> dict:
         try:
             payload = jwt.decode(
                 token,

@@ -2,7 +2,12 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ...dependencies.database_services import get_user_service, get_user_session_service
+from ...adapters import JwtManager
+from ...dependencies.database_services import (
+    get_jwt_manager,
+    get_user_service,
+    get_user_session_service,
+)
 from ...services import UserService, UserSessionService
 
 router = APIRouter()
@@ -13,12 +18,13 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_user_service),
     user_session_service: UserSessionService = Depends(get_user_session_service),
+    jwt_manager: JwtManager = Depends(get_jwt_manager),
 ):
     user = await user_service.get_user_by_email(form_data.username)
     if (
         not user
         or not user.is_active
-        or not user_service.security.verify_password(
+        or not user_service.hasher.verify_password(
             form_data.password, user.hashed_password
         )
     ):
@@ -31,7 +37,7 @@ async def login(
     refresh_token = await user_session_service.create_user_session(user.id)
 
     # app_logger.info(f"User {user.email=} {user.wallet.id=} logged in successfully")
-    access_token = user_service.security.encode_access_token(
+    access_token = jwt_manager.encode(
         {"sub": str(user.id), "wallet_id": str(user.wallet.id)}
     )
     response = JSONResponse(
@@ -64,6 +70,7 @@ async def refresh_jwt_token(
     refresh_token: str | None = Cookie(default=None),
     user_session_service: UserSessionService = Depends(get_user_session_service),
     user_service: UserService = Depends(get_user_service),
+    jwt_manager: JwtManager = Depends(get_jwt_manager),
 ):
     session = await user_session_service.get_user_session(refresh_token)
     if not session:
@@ -80,7 +87,7 @@ async def refresh_jwt_token(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found or inactive"
         )
 
-    access_token = user_service.security.encode_access_token(
+    access_token = jwt_manager.encode(
         {"sub": str(user.id), "wallet_id": str(user.wallet.id)}
     )
     response = JSONResponse(

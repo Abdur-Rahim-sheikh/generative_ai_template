@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 
-from ..adapters import Security
+from ..adapters import JwtManager
 from ..config.settings_config import OAUTH2_SCHEME
-from .database_services import get_security
+from .database_services import get_jwt_manager
 
 exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -15,11 +15,11 @@ exception = HTTPException(
 
 def decode_access_token(
     token: Annotated[str, Depends(OAUTH2_SCHEME)],
-    security: Annotated[Security, Depends(get_security)],
+    security: Annotated[JwtManager, Depends(get_jwt_manager)],
 ) -> dict:
 
     try:
-        payload = security.decode_access_token(token)
+        payload = security.decode(token)
         return payload
     except Exception:
         raise exception
