@@ -12,8 +12,8 @@ class ProductService:
     async def create_product(self, data: CreateProductRequest) -> Product:
         async with self.uow as uow:
             product_data = Product.model_validate(data)
-            saved = await uow.products.save(product_data)
-            return saved
+            await uow.products.save(product_data)
+            return product_data
 
     async def get_product(self, product_id: UUID) -> Product:
         async with self.uow as uow:
@@ -23,6 +23,14 @@ class ProductService:
 
             return product
 
-    async def delete_user(self, product_id: UUID) -> None:
+    async def delete_product(self, product_id: UUID) -> None:
         async with self.uow as uow:
             await uow.products.delete(product_id)
+
+    async def get_product_by_title(self, title: str) -> Product:
+        async with self.uow as uow:
+            product = await uow.products.get_by_title(title)
+            if not product:
+                raise NotFound("Product Not Found")
+
+            return product

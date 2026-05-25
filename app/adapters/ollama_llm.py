@@ -1,12 +1,10 @@
 from ollama import AsyncClient, GenerateResponse, ResponseError
 from pydantic import BaseModel
 
-from ..interfaces import BaseLLM
-from ..utils import singleton
 from ..config import app_logger
+from ..interfaces import BaseLLM
 
 
-@singleton
 class OllamaLLM(BaseLLM):
     def __init__(self, host: str, model: str = "llama3.1:8b", keep_alive: str = "5m"):
         self.client = AsyncClient(host=host)

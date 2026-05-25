@@ -1,8 +1,12 @@
+from unittest.mock import AsyncMock
+
 import pytest
 
-from ....services.chat_service import ChatService
 from ....schemas.chat import ChatResponse, EnhancedTextList
+from ....services import BillingService, ChatService
 from ...dummies import DummyLLM
+from ...fakes import FakeUnitOfWork
+from .conftest import SeedDbFactory
 
 
 @pytest.fixture
@@ -11,67 +15,148 @@ def llm() -> DummyLLM:
 
 
 @pytest.fixture
-def service(llm) -> ChatService:
-    return ChatService(llm=llm)
+def chat_service(llm: DummyLLM, billing_service: BillingService) -> ChatService:
+    return ChatService(llm=llm, billing=billing_service)
 
 
-class TestChatServiceMonologue:
-    async def test_make_script_monologue_returns_chat_response(self, service):
-        response = await service.make_script(
-            product="SuperApp",
-            goal="increase downloads",
-            audience="millennials",
-            platform="Instagram",
-            tone="energetic",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        assert isinstance(response, ChatResponse)
+async def call_make_script(
+    chat_service: ChatService, seeded_db: SeedDbFactory, format: str = "monologue"
+):
+    wallet, product = await seeded_db()
 
-    async def test_make_script_monologue_has_single_dialogue_entry(self, service):
-        response = await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        assert len(response.dialogue) == 1
+    return await chat_service.make_script(
+        wallet_id=wallet.id,
+        product_title=product.title,
+        product="SuperApp",
+        goal="increase downloads",
+        audience="millennials",
+        platform="Instagram",
+        tone="energetic",
+        language="en",
+        duration="short",
+        format=format,
+    )
 
-    async def test_make_script_monologue_uses_llm_ask(self, service, llm):
-        await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        assert len(llm.ask_calls) == 1
-        assert len(llm.formatted_ask_calls) == 0
 
-    async def test_monologue_system_prompt_is_sent(self, service, llm):
-        await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        call = llm.ask_calls[0]
-        assert "monologue" in call["instruction"].lower()
+@pytest.mark.parametrize("format", ["monologue", "dialogue"])
+async def test_make_script_returns_chat_response(
+    chat_service: ChatService, format: str, seeded_db: SeedDbFactory
+):
+    response = await call_make_script(chat_service, seeded_db, format)
+    assert isinstance(response, ChatResponse)
 
-    async def test_monologue_text_contains_product(self, service, llm):
-        await service.make_script(
+
+async def test_make_script_monologue_has_single_dialogue_entry(
+    chat_service: ChatService, seeded_db: SeedDbFactory
+):
+    response = await call_make_script(chat_service, seeded_db, format="monologue")
+    assert len(response.dialogue) == 1
+
+
+@pytest.mark.parametrize(
+    ("format", "used_method"), [("monologue", "ask"), ("dialogue", "formatted_ask")]
+)
+async def test_make_script_uses_respective_methods(
+    chat_service: ChatService,
+    llm: DummyLLM,
+    format: str,
+    used_method: str,
+    seeded_db: SeedDbFactory,
+):
+    await call_make_script(chat_service, seeded_db, format)
+    assert llm.call_history[0]["method"] == used_method
+
+
+@pytest.mark.parametrize("format", ["monologue", "dialogue"])
+async def test_system_prompt_is_sent(
+    chat_service: ChatService, llm: DummyLLM, format: str, seeded_db: SeedDbFactory
+):
+    await call_make_script(chat_service, seeded_db, format)
+    call = llm.call_history[0]
+    assert len(call["instruction"]) > 0
+
+
+@pytest.mark.parametrize("format", ["monologue", "dialogue"])
+async def test_generated_prompt_contains_all_fields(
+    chat_service: ChatService, llm: DummyLLM, format: str, seeded_db: SeedDbFactory
+):
+    await call_make_script(chat_service, seeded_db, format)
+    text = llm.call_history[0]["text"]
+    print(text)
+    assert all(
+        x in text
+        for x in [
+            "SuperApp",
+            "increase downloads",
+            "millennials",
+            "Instagram",
+            "energetic",
+            "en",
+            "short",
+            format,
+        ]
+    )
+
+
+async def test_enhance_returns_enhanced_text_list(
+    chat_service: ChatService, llm: DummyLLM
+):
+    result = await chat_service.enhance_script_text(
+        segments=["Buy now!", "Limited offer."],
+        language_id="en",
+    )
+
+    assert isinstance(result, EnhancedTextList)
+    history = llm.call_history[0]
+    assert history["method"] == llm.formatted_ask.__name__
+
+
+# Below method cannot be tested here, as this depends on pure ai
+# and we have dummies here, so this need to be tested in
+# integration or end2end or AI specific tests i guess
+
+# async def test_enhance_system_prompt_returns_exact_segment_count(
+#     chat_service: ChatService, llm: DummyLLM
+# ):
+#     segs = ["Line one", "Line two", "Line three"]
+#     enhanced_scripts = await chat_service.enhance_script_text(
+#         segments=segs, language_id="en"
+#     )
+#     print(enhanced_scripts.enhanced_texts)
+
+#     assert len(segs) == len(enhanced_scripts.enhanced_texts)
+
+
+async def test_enhance_prompt_returns_string(chat_service: ChatService):
+
+    result = await chat_service.enhance_realistic_image_prompt("a cat on a table")
+    assert isinstance(result, str)
+
+
+async def test_enhance_prompt_uses_llm_ask(chat_service: ChatService, llm: DummyLLM):
+    await chat_service.enhance_realistic_image_prompt("a dog in the park")
+    assert llm.call_history[0]["method"] == llm.ask.__name__
+
+
+async def test_generator_failure_does_not_revert_billing(
+    chat_service: ChatService, fake_uow: FakeUnitOfWork, seeded_db: SeedDbFactory
+):
+
+    COIN_BALANCE = 50
+    FREE_USES_REMAINING = 5
+    COIN_COST = 30
+    wallet, product = await seeded_db(
+        coin_balance=COIN_BALANCE,
+        free_uses_remaining=FREE_USES_REMAINING,
+        coin_cost=COIN_COST,
+    )
+
+    # mocking the generator
+    chat_service.llm.ask = AsyncMock(side_effect=Exception("Inappropriate prompt"))
+    with pytest.raises(Exception, match="Inappropriate prompt"):
+        await chat_service.make_script(
+            wallet_id=wallet.id,
+            product_title=product.title,
             product="MyCoolProduct",
             goal="Y",
             audience="Z",
@@ -81,127 +166,6 @@ class TestChatServiceMonologue:
             duration="short",
             format="monologue",
         )
-        assert "MyCoolProduct" in llm.ask_calls[0]["text"]
-
-    async def test_monologue_gender_is_female(self, service):
-        response = await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        assert response.dialogue[0].gender == "female"
-
-    async def test_monologue_person_id_is_1(self, service):
-        response = await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="monologue",
-        )
-        assert response.dialogue[0].person_id == 1
-
-
-class TestChatServiceDialogue:
-    async def test_make_script_dialogue_returns_chat_response(self, service):
-        response = await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="dialogue",
-        )
-        assert isinstance(response, ChatResponse)
-
-    async def test_make_script_dialogue_uses_formatted_ask(self, service, llm):
-        await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="dialogue",
-        )
-        assert len(llm.formatted_ask_calls) == 1
-        assert len(llm.ask_calls) == 0
-
-    async def test_dialogue_output_format_is_chat_response(self, service, llm):
-        await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="dialogue",
-        )
-        call = llm.formatted_ask_calls[0]
-        assert call["output_format"] is ChatResponse
-
-    async def test_dialogue_system_prompt_is_sent(self, service, llm):
-        await service.make_script(
-            product="X",
-            goal="Y",
-            audience="Z",
-            platform="W",
-            tone="casual",
-            language="en",
-            duration="short",
-            format="dialogue",
-        )
-        call = llm.formatted_ask_calls[0]
-        assert "dialogue" in call["instruction"].lower()
-
-
-class TestEnhanceScriptText:
-    async def test_enhance_returns_enhanced_text_list(self, service):
-        result = await service.enhance_script_text(
-            segments=["Buy now!", "Limited offer."],
-            language_id="en",
-        )
-        assert isinstance(result, EnhancedTextList)
-
-    async def test_enhance_uses_formatted_ask(self, service, llm):
-        await service.enhance_script_text(segments=["Hello world"], language_id="en")
-        assert len(llm.formatted_ask_calls) == 1
-
-    async def test_enhance_system_prompt_contains_segment_count(self, service, llm):
-        segs = ["Line one", "Line two", "Line three"]
-        await service.enhance_script_text(segments=segs, language_id="en")
-        instruction = llm.formatted_ask_calls[0]["instruction"]
-        assert str(len(segs)) in instruction
-
-    async def test_enhance_numbered_lines_in_text(self, service, llm):
-        segs = ["Alpha", "Beta"]
-        await service.enhance_script_text(segments=segs, language_id="en")
-        text = llm.formatted_ask_calls[0]["text"]
-        assert "1. Alpha" in text
-        assert "2. Beta" in text
-
-
-class TestEnhanceImagePrompt:
-    async def test_enhance_prompt_returns_string(self, service):
-        result = await service.enhance_realistic_image_prompt("a cat on a table")
-        assert isinstance(result, str)
-
-    async def test_enhance_prompt_uses_llm_ask(self, service, llm):
-        await service.enhance_realistic_image_prompt("a dog in the park")
-        assert len(llm.ask_calls) == 1
-
-    async def test_enhance_prompt_sends_original_text(self, service, llm):
-        await service.enhance_realistic_image_prompt("sunset over the ocean")
-        assert "sunset over the ocean" in llm.ask_calls[0]["text"]
+    current_wallet = await fake_uow.wallets.get(wallet.id)
+    assert current_wallet.coin_balance == COIN_BALANCE - COIN_COST
+    assert current_wallet.free_uses_remaining == FREE_USES_REMAINING

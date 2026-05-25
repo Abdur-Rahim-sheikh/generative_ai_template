@@ -7,14 +7,20 @@ from ...schemas.common import JobResponse, StatusResponse
 from ...schemas.image import PromptAndImageToImageRequest, PromptToImageRequest
 from ...utils.image import decode_base64_to_bytes
 from ...utils.watermark import auto_watermark
+from ...dependencies.auth import get_user_wallet_id
+from typing import Annotated
+from ...config import ProductTitle
 
 router = APIRouter()
 
 
 @router.post("/product-image/enqueue")
 async def enqueue_product_image(
-    request: PromptAndImageToImageRequest, queue: ArqRedis = Depends(get_job_queue)
+    request: PromptAndImageToImageRequest,
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
+    queue: ArqRedis = Depends(get_job_queue),
 ):
+
     image = decode_base64_to_bytes(b64=request.base64_image)
     prompt = (
         "Keep the product geometry, branding, and color unchanged. Remove the original background entirely."
@@ -22,6 +28,8 @@ async def enqueue_product_image(
     )
     job = await queue.enqueue_job(
         "product_photography",
+        wallet_id,
+        ProductTitle.PRODUCT_IMAGE,
         image,
         prompt,
         request.width,
@@ -34,10 +42,14 @@ async def enqueue_product_image(
 
 @router.post("/realistic-image/enqueue")
 async def enqueue_realistic_image(
-    request: PromptToImageRequest, queue: ArqRedis = Depends(get_job_queue)
+    request: PromptToImageRequest,
+    wallet_id: Annotated[str, Depends(get_user_wallet_id)],
+    queue: ArqRedis = Depends(get_job_queue),
 ):
     job = await queue.enqueue_job(
         "realistic_image",
+        wallet_id,
+        ProductTitle.REALISTIC_IMAGE,
         request.prompt,
         request.width,
         request.height,
@@ -62,7 +74,7 @@ async def get_status(job_id: str, queue: ArqRedis = Depends(get_job_queue)):
         message = "Something went wrong during processing"
         if result_info.success:
             message = "Image processed successfully"
-            results = result_info.results
+            results = result_info.result
             results = [auto_watermark(r) for r in results]
 
     return StatusResponse(status=status, message=message, results=results)

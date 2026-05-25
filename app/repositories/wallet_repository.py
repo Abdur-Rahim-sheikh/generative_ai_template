@@ -13,7 +13,7 @@ class WalletRepository(BaseWalletRepository):
     async def save(self, data: Wallet) -> Wallet:
         try:
             self.session.add(data)
-            self.session.flush()
+            await self.session.flush()
         except IntegrityError:
             raise AlreadyExists("This wallet already exists")
 

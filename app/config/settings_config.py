@@ -1,5 +1,6 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from fastapi.security import OAuth2PasswordBearer
 
 
 class Settings(BaseSettings):
@@ -31,7 +32,13 @@ class Settings(BaseSettings):
     COMFY_HOST: str
     COMFY_PORT: int
 
+    # jwt config
+    JWT_SECRET_KEY: SecretStr = "supersecretkey"
+    JWT_ALGORITHM: str = "HS256"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
+
+OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl="/api/auth/login")

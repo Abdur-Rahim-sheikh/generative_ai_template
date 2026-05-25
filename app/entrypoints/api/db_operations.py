@@ -7,6 +7,7 @@ from ...dependencies.database_services import get_product_service, get_user_serv
 from ...schemas.product import CreateProductRequest, ReadProduct
 from ...schemas.user import CreateUserRequest, ReadUser
 from ...services import ProductService, UserService
+from ...dependencies.auth import get_user_id
 
 router = APIRouter()
 
@@ -31,8 +32,12 @@ async def get_user(user_id: str, user_service: UserServiceDep):
     return user
 
 
-@router.delete("/delete-user/{user_id}")
-async def delete_user(user_id: str, user_service: UserServiceDep):
+@router.delete("/delete-user/me")
+async def delete_user(
+    user_service: UserServiceDep,
+    user_id: Annotated[str, Depends(get_user_id)],
+):
+
     await user_service.delete_user(user_id)
     return JSONResponse(
         content={"message": "User deleted successfully"},

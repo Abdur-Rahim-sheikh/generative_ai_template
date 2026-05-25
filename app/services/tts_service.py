@@ -1,10 +1,11 @@
 import re
+from uuid import UUID
 
 from num2words import num2words
 
-from ..config import app_logger
 from ..interfaces import BaseTTS
 from ..schemas.script import SpeechSegment
+from .billing_service import BillingService
 
 
 class TTSService:
@@ -16,8 +17,9 @@ class TTSService:
     ORDINAL_SUFFIX_RE = re.compile(r"\b(\d+)(st|nd|rd|th)\b")
     STANDALONE_DIGIT_RE = re.compile(r"\b\d+\b")
 
-    def __init__(self, tts: BaseTTS):
+    def __init__(self, tts: BaseTTS, billing: BillingService):
         self.tts = tts
+        self.billing = billing
 
     def normalize_numbers(self, text: str, lang: str):
         try:
@@ -66,13 +68,16 @@ class TTSService:
         result = self.normalize_numbers(text, lang=lang)
         return result
 
-    async def generate_tts(self, segments: list[SpeechSegment]) -> bytes:
+    async def generate_tts(
+        self, wallet_id: UUID, product_title: str, segments: list[SpeechSegment]
+    ) -> bytes:
+        await self.billing.transact(wallet_id=wallet_id, product_title=product_title)
+
         for idx, segment in enumerate(segments):
             if not self.tts.has_language(segment.language_id):
                 raise ValueError(
                     f"Language {segment.language_id} is not be within {await self.tts.allowed_languages()}"
                 )
-            app_logger.debug(f"Cleaned, {segment.text} in {segment.language_id=}")
             segments[idx].text = self.clean_text(segment.text, segment.language_id)
-            app_logger.debug(f" to {segments[idx].text}")
+
         return await self.tts.synthesize(segments=segments)

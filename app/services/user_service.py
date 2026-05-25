@@ -4,23 +4,28 @@ from ..domain.models import User, Wallet
 from ..domain.exceptions import NotFound
 from ..interfaces import BaseUnitOfWork
 from ..schemas.user import CreateUserRequest
+from ..adapters import PasswordHasher
 
 
 class UserService:
-    def __init__(self, uow: BaseUnitOfWork):
+    def __init__(self, uow: BaseUnitOfWork, hasher: PasswordHasher):
         self.uow = uow
+        self.hasher = hasher
 
-    async def create_user(self, data: CreateUserRequest) -> User:
+    async def create_user(
+        self, data: CreateUserRequest, initial_free_uses: int = 50
+    ) -> User:
         async with self.uow as uow:
             new_user = User(
+                id=None,
                 first_name=data.first_name,
                 last_name=data.last_name,
                 email=data.email,
-                hashed_password=data.hashed_password,
+                hashed_password=self.hasher.hash(data.password.get_secret_value()),
             )
             await uow.users.save(new_user)
 
-            new_wallet = Wallet(user=new_user, free_uses_remaining=50)
+            new_wallet = Wallet(user=new_user, free_uses_remaining=initial_free_uses)
 
             await uow.wallets.save(new_wallet)
             return new_user

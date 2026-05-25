@@ -1,5 +1,6 @@
 import asyncio
 
+from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
 
 from ...interfaces import BaseLLM
@@ -17,14 +18,15 @@ class DummyLLM(BaseLLM):
 
     def __init__(self):
         # Record every call so tests can inspect what was sent to the LLM.
-        self.ask_calls: list[dict] = []
-        self.formatted_ask_calls: list[dict] = []
+        self.call_history: list[dict] = []
 
     async def prepare(self):
         await asyncio.sleep(0)
 
     async def ask(self, text: str, instruction: str = "") -> str:
-        self.ask_calls.append({"text": text, "instruction": instruction})
+        self.call_history.append(
+            {"text": text, "instruction": instruction, "method": self.ask.__name__}
+        )
         return f"dummy response for: {text}"
 
     async def formatted_ask(
@@ -33,8 +35,17 @@ class DummyLLM(BaseLLM):
         output_format: type[BaseModel],
         instruction: str = "",
     ) -> BaseModel:
-        self.formatted_ask_calls.append(
-            {"text": text, "output_format": output_format, "instruction": instruction}
+        self.call_history.append(
+            {
+                "text": text,
+                "output_format": output_format,
+                "instruction": instruction,
+                "method": self.formatted_ask.__name__,
+            }
         )
-        # model_construct skips validation — intentional for speed in tests.
-        return output_format.model_construct()
+
+        class DynamicFactory(ModelFactory[output_format]):
+            __model__ = output_format
+
+        # constructing fake data
+        return DynamicFactory.build()

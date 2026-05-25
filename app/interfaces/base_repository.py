@@ -33,7 +33,9 @@ class BaseUserRepository(BaseRepository[User]):
 
 
 class BaseProductRepository(BaseRepository[Product]):
-    pass
+    @abstractmethod
+    async def get_by_title(self, title: str) -> Product | None:
+        raise NotImplementedError
 
 
 class BaseWalletRepository(BaseRepository[Wallet]):

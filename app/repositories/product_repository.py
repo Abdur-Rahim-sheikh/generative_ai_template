@@ -12,7 +12,7 @@ class ProductRepository(BaseProductRepository):
     async def save(self, data: Product):
         try:
             self.session.add(data)
-            self.session.flush()
+            await self.session.flush()
         except IntegrityError:
             raise AlreadyExists("The Product already exists with this title")
 
@@ -24,3 +24,9 @@ class ProductRepository(BaseProductRepository):
         statement = delete_statement(Product).where(Product.id == id)
         await self.session.execute(statement)
         await self.session.flush()
+
+    async def get_by_title(self, title: str) -> Product | None:
+        result = await self.session.execute(
+            select(Product).where(Product.title == title)
+        )
+        return result.scalar_one_or_none()

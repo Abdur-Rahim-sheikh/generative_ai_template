@@ -1,3 +1,4 @@
+from typing import Generic, TypeVar
 from uuid import UUID, uuid4
 
 from ...domain.models import Product, Transaction, User, UserSession, Wallet
@@ -10,114 +11,72 @@ from ...interfaces.base_repository import (
 )
 from ...interfaces.base_uow import BaseUnitOfWork
 
+T = TypeVar("T")
 
-class FakeUserRepository(BaseUserRepository):
-    """In-memory User repository for unit tests."""
 
+class GenericFakeRepository(Generic[T]):
     def __init__(self):
-        self.users: dict[UUID, User] = {}
+        self._storage: dict[UUID, T] = {}
 
-    async def save(self, data: User) -> User:
+    async def save(self, data: T):
+        if not data.id:
+            data.id = uuid4()
 
-        data.id = uuid4()
-        self.users[data.id] = data
-        return data
+        self._storage[data.id] = data
 
-    async def get(self, id: UUID) -> User | None:
-        return self.users.get(id)
+    async def get(self, id: UUID) -> T | None:
+        return self._storage.get(id)
 
     async def delete(self, id: UUID) -> None:
-        self.users.pop(id, None)
+        self._storage.pop(id, None)
+
+
+class FakeUserRepository(GenericFakeRepository[User], BaseUserRepository):
+    """In-memory User repository for unit tests."""
 
     async def get_by_email(self, email: str) -> User | None:
-        for user in self.users.values():
+        for user in self._storage.values():
             if user.email == email:
                 return user
         return None
 
 
-class FakeProductRepository(BaseProductRepository):
+class FakeProductRepository(GenericFakeRepository[Product], BaseProductRepository):
     """In-memory Product repository for unit tests."""
 
-    def __init__(self):
-        self.products: dict[UUID, Product] = {}
-
-    async def save(self, data: Product) -> Product:
-        data.id = uuid4()
-        self.products[data.id] = data
-        return data
-
-    async def get(self, id: UUID) -> Product | None:
-        return self.products.get(id)
-
-    async def delete(self, id: UUID) -> None:
-        self.products.pop(id, None)
+    async def get_by_title(self, title: str) -> Product | None:
+        for product in self._storage.values():
+            if product.title == title:
+                return product
+        return None
 
 
-class FakeWalletRepository(BaseWalletRepository):
+class FakeWalletRepository(GenericFakeRepository[Wallet], BaseWalletRepository):
     """In-memory Wallet repository for unit tests."""
 
-    def __init__(self):
-        self.wallets: dict[UUID, Wallet] = {}
-
-    async def save(self, data: Wallet) -> Wallet:
-        data.id = uuid4()
-        self.wallets[data.id] = data
-        return data
-
-    async def get(self, id: UUID) -> Wallet | None:
-        return self.wallets.get(id)
-
-    async def delete(self, id: UUID) -> None:
-        self.wallets.pop(id, None)
-
     async def get_by_user_id(self, user_id: UUID) -> Wallet | None:
-        for wallet in self.wallets.values():
+        for wallet in self._storage.values():
             if wallet.user_id == user_id:
                 return wallet
         return None
 
 
-class FakeTransactionRepository(BaseTransactionRepository):
+class FakeTransactionRepository(
+    GenericFakeRepository[Transaction], BaseTransactionRepository
+):
     """In-memory Transaction repository for unit tests."""
 
-    def __init__(self):
-        self.transactions: dict[UUID, Transaction] = {}
-
-    async def save(self, data: Transaction) -> Transaction:
-        data.id = uuid4()
-        self.transactions[data.id] = data
-        return data
-
-    async def get(self, id: UUID) -> Transaction | None:
-        return self.transactions.get(id)
-
-    async def delete(self, id: UUID) -> None:
-        self.transactions.pop(id, None)
-
     async def get_by_wallet_id(self, wallet_id: UUID) -> list[Transaction]:
-        return [t for t in self.transactions.values() if t.wallet_id == wallet_id]
+        return [t for t in self._storage.values() if t.wallet_id == wallet_id]
 
 
-class FakeUserSessionRepository(BaseUserSessionRepository):
+class FakeUserSessionRepository(
+    GenericFakeRepository[UserSession], BaseUserSessionRepository
+):
     """In-memory Session repository for unit tests."""
 
-    def __init__(self):
-        self.sessions: dict[UUID, UserSession] = {}
-
-    async def save(self, data: UserSession) -> UserSession:
-        data.id = uuid4()
-        self.sessions[data.id] = data
-        return data
-
-    async def get(self, id: UUID) -> UserSession | None:
-        return self.sessions.get(id)
-
-    async def delete(self, id: UUID) -> None:
-        self.sessions.pop(id, None)
-
     async def get_by_user_id(self, user_id: UUID) -> UserSession | None:
-        for session in self.sessions.values():
+        for session in self._storage.values():
             if session.user_id == user_id:
                 return session
         return None

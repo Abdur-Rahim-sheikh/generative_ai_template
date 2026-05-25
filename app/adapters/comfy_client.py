@@ -7,6 +7,7 @@ import aiohttp
 from ..config import app_logger
 from ..schemas.comfy import ComfyStatus
 from ..utils.image import encode_bytes_to_base64
+from typing import Self
 
 
 class ComfyClient:
@@ -54,7 +55,7 @@ class ComfyClient:
         self._loop_task = None
         self.connected = False
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         await self.connect()
         return self
 
