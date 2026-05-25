@@ -29,44 +29,56 @@ def create_request() -> CreateProductRequest:
 
 class TestProductService:
     async def test_create_product_returns_product_with_id(
-        self, service, create_request
+        self, service: ProductService, create_request
     ):
         product = await service.create_product(create_request)
         assert product is not None
         assert product.id is not None
 
-    async def test_create_product_persists_title(self, service, create_request, uow):
+    async def test_create_product_persists_title(
+        self, service: ProductService, create_request, uow
+    ):
         assert uow == service.uow, "Both unit of work are not same"
         product = await service.create_product(create_request)
         fetched = await uow.products.get(product.id)
         assert fetched is not None
         assert fetched.title == create_request.title
 
-    async def test_create_product_commits_uow(self, service, create_request, uow):
+    async def test_create_product_commits_uow(
+        self, service: ProductService, create_request, uow
+    ):
         await service.create_product(create_request)
         assert uow.committed is True
 
-    async def test_get_product_returns_existing(self, service, create_request):
+    async def test_get_product_returns_existing(
+        self, service: ProductService, create_request
+    ):
         created = await service.create_product(create_request)
         fetched = await service.get_product(created.id)
         assert fetched is not None
         assert fetched.id == created.id
 
-    async def test_get_product_returns_notfound_exception_for_missing(self, service):
+    async def test_get_product_returns_notfound_exception_for_missing(
+        self, service: ProductService
+    ):
         with pytest.raises(NotFound):
             await service.get_product(uuid4())
 
     async def test_delete_product_removes_from_storage(
-        self, service, create_request, uow
+        self, service: ProductService, create_request, uow
     ):
         created = await service.create_product(create_request)
-        await service.delete_user(created.id)
+        await service.delete_product(created.id)
         assert await uow.products.get(created.id) is None
 
-    async def test_coin_cost_is_stored_correctly(self, service, create_request):
+    async def test_coin_cost_is_stored_correctly(
+        self, service: ProductService, create_request
+    ):
         product = await service.create_product(create_request)
         assert product.coin_cost == create_request.coin_cost
 
-    async def test_unit_is_stored_correctly(self, service, create_request):
+    async def test_unit_is_stored_correctly(
+        self, service: ProductService, create_request
+    ):
         product = await service.create_product(create_request)
         assert product.unit == create_request.unit

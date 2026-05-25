@@ -44,7 +44,11 @@ class FakeUserRepository(GenericFakeRepository[User], BaseUserRepository):
 class FakeProductRepository(GenericFakeRepository[Product], BaseProductRepository):
     """In-memory Product repository for unit tests."""
 
-    pass
+    async def get_by_title(self, title: str) -> Product | None:
+        for product in self._storage.values():
+            if product.title == title:
+                return product
+        return None
 
 
 class FakeWalletRepository(GenericFakeRepository[Wallet], BaseWalletRepository):

@@ -1,12 +1,10 @@
 import asyncio
 
+from ...config import app_logger
 from ...interfaces import BaseTTS
 from ...schemas.script import SpeechSegment
-from ...config import app_logger
-from ...utils.decorators import singleton
 
 
-@singleton
 class DummyTTS(BaseTTS):
     """
     In-process TTS double.

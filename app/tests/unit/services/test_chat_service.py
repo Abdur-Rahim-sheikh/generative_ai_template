@@ -19,15 +19,14 @@ def chat_service(llm: DummyLLM, billing_service: BillingService) -> ChatService:
     return ChatService(llm=llm, billing=billing_service)
 
 
-@pytest.mark.parametrize("format", ["monologue", "dialogue"])
-async def test_make_script_returns_chat_response(
-    chat_service: ChatService, format: str, seeded_db: SeedDbFactory
+async def call_make_script(
+    chat_service: ChatService, seeded_db: SeedDbFactory, format: str = "monologue"
 ):
-    await seeded_db()
+    wallet, product = await seeded_db()
 
-    response = await chat_service.make_script(
-        wallet_id="test-wallet-id",
-        product_title="test-product-id",
+    return await chat_service.make_script(
+        wallet_id=wallet.id,
+        product_title=product.title,
         product="SuperApp",
         goal="increase downloads",
         audience="millennials",
@@ -37,25 +36,20 @@ async def test_make_script_returns_chat_response(
         duration="short",
         format=format,
     )
+
+
+@pytest.mark.parametrize("format", ["monologue", "dialogue"])
+async def test_make_script_returns_chat_response(
+    chat_service: ChatService, format: str, seeded_db: SeedDbFactory
+):
+    response = await call_make_script(chat_service, seeded_db, format)
     assert isinstance(response, ChatResponse)
 
 
 async def test_make_script_monologue_has_single_dialogue_entry(
     chat_service: ChatService, seeded_db: SeedDbFactory
 ):
-    await seeded_db()
-    response = await chat_service.make_script(
-        wallet_id="test-wallet-id",
-        product_title="test-product-id",
-        product="X",
-        goal="Y",
-        audience="Z",
-        platform="W",
-        tone="casual",
-        language="en",
-        duration="short",
-        format="monologue",
-    )
+    response = await call_make_script(chat_service, seeded_db, format="monologue")
     assert len(response.dialogue) == 1
 
 
@@ -69,19 +63,7 @@ async def test_make_script_uses_respective_methods(
     used_method: str,
     seeded_db: SeedDbFactory,
 ):
-    await seeded_db()
-    await chat_service.make_script(
-        wallet_id="test-wallet-id",
-        product_title="test-product-id",
-        product="X",
-        goal="Y",
-        audience="Z",
-        platform="W",
-        tone="casual",
-        language="en",
-        duration="short",
-        format=format,
-    )
+    await call_make_script(chat_service, seeded_db, format)
     assert llm.call_history[0]["method"] == used_method
 
 
@@ -89,19 +71,7 @@ async def test_make_script_uses_respective_methods(
 async def test_system_prompt_is_sent(
     chat_service: ChatService, llm: DummyLLM, format: str, seeded_db: SeedDbFactory
 ):
-    await seeded_db()
-    await chat_service.make_script(
-        wallet_id="test-wallet-id",
-        product_title="test-product-id",
-        product="X",
-        goal="Y",
-        audience="Z",
-        platform="W",
-        tone="casual",
-        language="en",
-        duration="short",
-        format=format,
-    )
+    await call_make_script(chat_service, seeded_db, format)
     call = llm.call_history[0]
     assert len(call["instruction"]) > 0
 
@@ -110,29 +80,27 @@ async def test_system_prompt_is_sent(
 async def test_generated_prompt_contains_all_fields(
     chat_service: ChatService, llm: DummyLLM, format: str, seeded_db: SeedDbFactory
 ):
-    await seeded_db()
-    await chat_service.make_script(
-        wallet_id="test-wallet-id",
-        product_title="test-product-id",
-        product="MyCoolProduct",
-        goal="Y",
-        audience="Z",
-        platform="W",
-        tone="casual",
-        language="en",
-        duration="short",
-        format=format,
-    )
+    await call_make_script(chat_service, seeded_db, format)
     text = llm.call_history[0]["text"]
+    print(text)
     assert all(
-        x in text for x in ["MyCoolProduct", "Y", "W", "casual", "en", "short", format]
+        x in text
+        for x in [
+            "SuperApp",
+            "increase downloads",
+            "millennials",
+            "Instagram",
+            "energetic",
+            "en",
+            "short",
+            format,
+        ]
     )
 
 
 async def test_enhance_returns_enhanced_text_list(
-    chat_service: ChatService, llm: DummyLLM, seeded_db: SeedDbFactory
+    chat_service: ChatService, llm: DummyLLM
 ):
-    await seeded_db()
     result = await chat_service.enhance_script_text(
         segments=["Buy now!", "Limited offer."],
         language_id="en",
@@ -159,18 +127,13 @@ async def test_enhance_returns_enhanced_text_list(
 #     assert len(segs) == len(enhanced_scripts.enhanced_texts)
 
 
-async def test_enhance_prompt_returns_string(
-    chat_service: ChatService, seeded_db: SeedDbFactory
-):
-    await seeded_db()
+async def test_enhance_prompt_returns_string(chat_service: ChatService):
+
     result = await chat_service.enhance_realistic_image_prompt("a cat on a table")
     assert isinstance(result, str)
 
 
-async def test_enhance_prompt_uses_llm_ask(
-    chat_service: ChatService, llm: DummyLLM, seeded_db: SeedDbFactory
-):
-    await seeded_db()
+async def test_enhance_prompt_uses_llm_ask(chat_service: ChatService, llm: DummyLLM):
     await chat_service.enhance_realistic_image_prompt("a dog in the park")
     assert llm.call_history[0]["method"] == llm.ask.__name__
 
@@ -193,7 +156,7 @@ async def test_generator_failure_does_not_revert_billing(
     with pytest.raises(Exception, match="Inappropriate prompt"):
         await chat_service.make_script(
             wallet_id=wallet.id,
-            product_title=product.id,
+            product_title=product.title,
             product="MyCoolProduct",
             goal="Y",
             audience="Z",

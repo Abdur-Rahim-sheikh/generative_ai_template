@@ -3,11 +3,9 @@ from random import randint
 from PIL import Image
 
 from ...interfaces import BaseImageGenerator
-from ...utils.decorators import singleton
 from ...utils.image import encode_image_to_base64
 
 
-@singleton
 class DummyImageGenerator(BaseImageGenerator):
     """
     Dummy Image Generator

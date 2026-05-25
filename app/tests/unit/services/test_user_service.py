@@ -2,15 +2,16 @@ from uuid import uuid4
 
 import pytest
 
-from ....schemas.user import CreateUserRequest
-from ....services.user_service import UserService
-from ...fakes import FakeUnitOfWork
+from ....adapters import PasswordHasher
 from ....domain.exceptions import NotFound
+from ....schemas.user import CreateUserRequest
+from ....services import UserService
+from ...fakes import FakeUnitOfWork
 
 
 @pytest.fixture
 def user_service(fake_uow: FakeUnitOfWork) -> UserService:
-    return UserService(uow=fake_uow)
+    return UserService(uow=fake_uow, hasher=PasswordHasher())
 
 
 @pytest.fixture
@@ -109,7 +110,7 @@ class TestUserService:
                 return None
 
         fake_uow.users = BrokenRepo()
-        service = UserService(uow=fake_uow)
+        service = UserService(uow=fake_uow, hasher=PasswordHasher())
         with pytest.raises(RuntimeError):
             await service.create_user(
                 CreateUserRequest(

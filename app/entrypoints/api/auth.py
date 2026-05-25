@@ -24,9 +24,7 @@ async def login(
     if (
         not user
         or not user.is_active
-        or not user_service.hasher.verify_password(
-            form_data.password, user.hashed_password
-        )
+        or not user_service.hasher.verify(form_data.password, user.hashed_password)
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

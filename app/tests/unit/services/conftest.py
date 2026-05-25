@@ -1,7 +1,7 @@
 import pytest
 from ...fakes import FakeUnitOfWork
 from ....domain.models import Wallet, Product
-
+from ....dependencies.ai_services import _ADAPTER_CACHE
 from typing import Protocol, Awaitable
 
 
@@ -23,7 +23,10 @@ async def seeded_db(fake_uow: FakeUnitOfWork) -> SeedDbFactory:
             free_uses_remaining=free_uses_remaining,
         )
         product = Product(
-            id="test-product-id", title="test-title", coin_cost=coin_cost, unit="second"
+            id="test-product-id",
+            title="test-product-title",
+            coin_cost=coin_cost,
+            unit="second",
         )
         await fake_uow.wallets.save(wallet)
         await fake_uow.products.save(product)
@@ -31,3 +34,10 @@ async def seeded_db(fake_uow: FakeUnitOfWork) -> SeedDbFactory:
         return wallet, product
 
     return _seed_db
+
+
+@pytest.fixture(autouse=True)
+def clear_adapter_cache():
+    # Clear the adapter cache before each test to ensure test isolation.
+    _ADAPTER_CACHE.clear()
+    # yield

@@ -30,7 +30,7 @@ class TestTTSServiceGenerate:
     ):
         wallet, product = await seeded_db()
         segments = [make_segment("Hello world", "en")]
-        result = await tts_service.generate_tts(wallet.id, product.id, segments)
+        result = await tts_service.generate_tts(wallet.id, product.title, segments)
         assert isinstance(result, bytes)
         assert len(result) > 0
 
@@ -40,7 +40,7 @@ class TestTTSServiceGenerate:
         wallet, product = await seeded_db()
         segments = [make_segment("Test", "en")]
         await tts_service.generate_tts(
-            wallet_id=wallet.id, product_title=product.id, segments=segments
+            wallet_id=wallet.id, product_title=product.title, segments=segments
         )
         assert len(tts.synthesize_calls) == 1
 
@@ -49,7 +49,7 @@ class TestTTSServiceGenerate:
     ):
         wallet, product = await seeded_db()
         segments = [make_segment("Hi", "en"), make_segment("Salam", "bn")]
-        await tts_service.generate_tts(wallet.id, product.id, segments)
+        await tts_service.generate_tts(wallet.id, product.title, segments)
         assert tts.synthesize_calls[0] == segments
 
     async def test_generate_tts_raises_for_unsupported_language(
@@ -58,7 +58,7 @@ class TestTTSServiceGenerate:
         wallet, product = await seeded_db()
         segments = [make_segment("Hola", "es")]
         with pytest.raises(ValueError, match="es"):
-            await tts_service.generate_tts(wallet.id, product.id, segments)
+            await tts_service.generate_tts(wallet.id, product.title, segments)
 
     async def test_error_message_lists_allowed_languages(
         self, tts_service: TTSService, seeded_db: SeedDbFactory
@@ -67,7 +67,7 @@ class TestTTSServiceGenerate:
 
         segments = [make_segment("test", "zz")]
         with pytest.raises(ValueError) as exc_info:
-            await tts_service.generate_tts(wallet.id, product.id, segments)
+            await tts_service.generate_tts(wallet.id, product.title, segments)
         assert "zz" in str(exc_info.value)
 
     async def test_text_is_cleaned_before_synthesis(
@@ -76,7 +76,7 @@ class TestTTSServiceGenerate:
         """Numbers in text should be converted to words before sending to TTS."""
         wallet, product = await seeded_db()
         segments = [make_segment("I have 3 apples", "en")]
-        await tts_service.generate_tts(wallet.id, product.id, segments)
+        await tts_service.generate_tts(wallet.id, product.title, segments)
         synthesized = tts.synthesize_calls[0][0]
         assert "3" not in synthesized.text
         assert "three" in synthesized.text.lower()
@@ -89,7 +89,7 @@ class TestTTSServiceGenerate:
             make_segment("Hello", "en"),
             make_segment("Salam", "bn"),
         ]
-        await tts_service.generate_tts(wallet.id, product.id, segments)
+        await tts_service.generate_tts(wallet.id, product.title, segments)
         assert len(tts.synthesize_calls) == 1
 
     async def test_first_segment_valid_second_invalid_raises(
@@ -98,7 +98,7 @@ class TestTTSServiceGenerate:
         wallet, product = await seeded_db()
         segments = [make_segment("Hello", "en"), make_segment("Hola", "es")]
         with pytest.raises(ValueError):
-            await tts_service.generate_tts(wallet.id, product.id, segments)
+            await tts_service.generate_tts(wallet.id, product.title, segments)
 
 
 class TestCleanText:

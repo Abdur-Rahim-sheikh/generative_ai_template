@@ -20,7 +20,8 @@ def make_llm():
 
     if settings.USE_DUMMY_SERVICES:
         _ADAPTER_CACHE["llm"] = DummyLLM()
-    _ADAPTER_CACHE["llm"] = OllamaLLM()
+    else:
+        _ADAPTER_CACHE["llm"] = OllamaLLM(host=settings.OLLAMA_HOST)
     return _ADAPTER_CACHE["llm"]
 
 
@@ -30,7 +31,10 @@ def make_tts():
 
     if settings.USE_DUMMY_SERVICES:
         _ADAPTER_CACHE["tts"] = DummyTTS()
-    _ADAPTER_CACHE["tts"] = CoquiTTS()
+    else:
+        _ADAPTER_CACHE["tts"] = CoquiTTS(
+            host=settings.COQUI_HOST, port=settings.COQUI_PORT
+        )
     return _ADAPTER_CACHE["tts"]
 
 
@@ -40,9 +44,10 @@ def make_comfy_image() -> ComfyImage:
 
     if settings.USE_DUMMY_SERVICES:
         _ADAPTER_CACHE["comfy_image"] = DummyImageGenerator()
-    _ADAPTER_CACHE["comfy_image"] = ComfyImage(
-        client=ComfyClient(host=settings.COMFY_HOST, port=settings.COMFY_PORT)
-    )
+    else:
+        _ADAPTER_CACHE["comfy_image"] = ComfyImage(
+            client=ComfyClient(host=settings.COMFY_HOST, port=settings.COMFY_PORT)
+        )
     return _ADAPTER_CACHE["comfy_image"]
 
 

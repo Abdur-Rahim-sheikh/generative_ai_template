@@ -14,8 +14,10 @@ async def test_missing_wallet_id(billing_service: BillingService):
 async def test_missing_product_id(billing_service: BillingService):
     wallet = Wallet(user_id="USERID", coin_balance=50, free_uses_remaining=5)
     await billing_service.uow.wallets.save(data=wallet)
-    with pytest.raises(NotFound, match="Product not found with product_id='WRONG_ID'"):
-        await billing_service.transact(wallet.id, "WRONG_ID")
+    with pytest.raises(
+        NotFound, match="Product not found with product_title='WRONG_TITLE'"
+    ):
+        await billing_service.transact(wallet.id, "WRONG_TITLE")
 
 
 async def test_insufficient_balance_exception(
@@ -34,7 +36,7 @@ async def test_insufficient_balance_exception(
     with pytest.raises(InsufficientFunds):
         await billing_service.transact(
             wallet_id=wallet.id,
-            product_title=product.id,
+            product_title=product.title,
         )
 
     assert wallet.coin_balance == COIN_BALANCE
@@ -53,5 +55,5 @@ async def test_happy_path(billing_service: BillingService, seeded_db: SeedDbFact
 
     await billing_service.transact(
         wallet_id=wallet.id,
-        product_title=product.id,
+        product_title=product.title,
     )
