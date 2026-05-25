@@ -1,67 +1,81 @@
-# Generative AI Backend
+# Containerized Generative AI API Template
 
-Production-ready multimodal AI backend featuring LLM, image generation, and TTS. Built with **FastAPI**, **PostgreSQL**, **Redis**, and **ARQ**.
-
-## Highlights
-
-### Architecture Patterns
-
-- **Clean Architecture** — Layered design with interfaces, services, repositories, and schemas
-- **Dependency Injection** — Centralized service initialization for testability
-- **Unit of Work Pattern** — Transaction management across data layers
-- **Async-First** — Non-blocking FastAPI endpoints with background job processing
-
-### Database & Data
-
-- **Redis** — In-memory caching and persistent job queue
-- **Repository Pattern** — Abstract data access layer with CRUD operations
-- **Pydantic Schemas** — Type-safe request/response validation
-
-### AI Integration
-
-- **Ollama LLM** — Local text generation with abstract base interface
-- **ComfyUI** — Image diffusion with dynamic workflow generation
-- **Coqui TTS** — Text-to-speech service integration
-- **Service Abstraction** — Swappable implementations for any AI provider
-
-### Asynchronous Processing
-
-- **ARQ Queue** — Background job workers for long-running tasks
-- **Immediate Responses** — API endpoints return job IDs without blocking
-- **Batch Processing** — Handle multiple concurrent image generations
-- **Job Persistence** — Redis-backed queue survives worker restarts
+> A production-ready FastAPI backend template for LLM, image generation, and TTS — built with architecture that scales, not just code that runs.
 
 ---
 
-## Project Structure
+## Why This Exists
 
-```
-.
-├── config/          # Settings, logging, connections
-├── data/            # External service clients (Ollama, ComfyUI, Coqui, Redis)
-├── domain/          # Core business entities
-├── interfaces/      # Abstract contracts (BaseRepository, BaseLLM, BaseTTS)
-├── dependencies/    # Dependency injection & initialization
-├── repositories/    # Data access layer (Unit of Work)
-├── services/        # Business logic (Chat, Product, TTS, Workflow)
-├── schemas/         # Pydantic validation (Chat, Image, User, Product)
-├── entrypoints/     # API routes & ARQ workers
-├── utils/           # Decorators, image processing, watermarking
-├── tests/           # Unit tests with dummy mocks
-└── main.py          # FastAPI application entry point
-```
+Most GenAI backend tutorials get you to a working demo. Then you hit production and realize you need auth, job queuing, billing, database migrations, and service abstractions that don't collapse when you swap one AI provider for another.
+
+This template gives you that foundation. The AI integrations (Ollama, ComfyUI, Coqui TTS) are real and working — but they're just services. The architecture is the point.
 
 ---
 
-## API Endpoints
+## Sample Output
+
+This mug was fed into one of the ComfyUI workflows, interpolated, and composited into a generated background — entirely through the API.
+
+with a simple prompt: `take the subject. put it on a mountain cliff. Where in the far sight we can sea the vast ocean.`
+
+<details>
+
+<summary> Input and the generated ouput Image</summary>
+
+|                           Before                            |                            After                            |
+| :---------------------------------------------------------: | :---------------------------------------------------------: |
+| <img src="resources/images/reference_cup.jpg" width="320"/> | <img src="resources/images/generated_cup.png" width="240"/> |
+
+</details>
+
+## Design & Architecture
+
+Follows **Onion Architecture** with pythonic Domain Driven Design. Every dependency points inward — adapters and repositories both implement abstract interfaces, so services never know what's on the other side.
+
+```mermaid
+flowchart TD
+    Entrypoints["`**Entrypoints**
+            *[API . ARQ Workers]*`"]
+    Services["`**Services**
+            *[Billing, Chat, Image]*`"]
+    Adapters["`**Adapters**
+            *[Ollama, ComfyUI, Redis]*`"]
+    Repositories["`**Repositories**
+            *[Unit of Work, CRUD]*`"]
+    Abstracts["`**Abstracts Interfaces**
+            *[NoSQL, BaseImage]*`"]
+    SQLModels["`**SQLAlchemy ORM**
+            *[async sessions, Alembic]*`"]
+
+    PostgreSQL@{shape: lin-cyl, label:"`**PostgreSQL**`"}
+
+    Tests["`**Tests**
+            *[Dummies, Fakes, Unit]*`"]
+    Schemas["`**Schemas**
+            *[Pydantic Validation]*`"]
+    Domain["`**Domain**
+            *[Models, Exceptions]*`"]
+
+    Entrypoints --DI--> Services
+    Services --> Abstracts
+    Abstracts -.implemented by.-> Repositories
+    Abstracts -.implemented by.-> Adapters
+    Repositories --> SQLModels
+    SQLModels ==> PostgreSQL
+
+    PostgreSQL ~~~ Tests
+    PostgreSQL ~~~ Schemas
+    PostgreSQL ~~~ Domain
+```
+
+**What this buys you:** swap Ollama for any other LLM either custom or **Third party API integrations** by implementing `BaseLLM`. Replace ComfyUI with diffusers by implementing `BaseImageGenerator`. Services stay untouched.
+
+Image generation runs asynchronously — the API enqueues a job via ARQ, a worker processes it, and the result is stored in Redis. The client polls for status.
 
 ```
-POST /api/llm/generate          → Text generation
-POST /api/diffusion/generate    → Image generation (async)
-POST /api/tts/generate          → Text-to-speech
-GET  /api/jobs/{job_id}         → Check job status
-
-Also, CRUD endpoints in progress.
+POST /api/diffusion/* → ARQ enqueues job → worker processes → Redis stores result
+                                                        ↑
+                               GET /api/diffusion/get-status/{job_id}
 ```
 
 ---
@@ -71,39 +85,110 @@ Also, CRUD endpoints in progress.
 | Layer                | Technology              |
 | -------------------- | ----------------------- |
 | **API Framework**    | FastAPI (async)         |
-| **Database**         | PostgreSQL              |
-| **Cache/Queue**      | Redis + ARQ             |
+| **Database**         | PostgreSQL + Alembic    |
+| **Cache / Queue**    | Redis + ARQ             |
+| **Testing**          | pytest + mock fixtures  |
 | **Data Validation**  | Pydantic                |
 | **LLM**              | Ollama                  |
 | **Image Generation** | ComfyUI                 |
 | **Text-to-Speech**   | Coqui TTS               |
 | **Deployment**       | Docker + Docker Compose |
 
-<!-- | **Testing**          | pytest + mock fixtures  | -->
+---
 
-## Quick Start
+## API Endpoints
+
+```
+# AI
+POST /api/llm/generate                    Text generation
+POST /api/diffusion/*                     Image generation (async)
+GET  /api/diffusion/get-status/{job_id}   Poll job status
+
+# Auth
+POST /api/auth/login
+POST /api/auth/logout
+POST /api/auth/refresh
+
+# CRUD
+POST /api/db/create-user
+POST /api/db/create-product
+...
+```
+
+Full interactive docs at `http://localhost:8000/docs` once running.
+
+---
+
+## Project Structure
+
+```
+app/
+├── domain/          # Models and exceptions — no dependencies
+├── interfaces/      # Abstract base classes for all services
+├── services/        # Business logic — depends only on interfaces
+├── adapters/        # AI integrations: Ollama, ComfyUI, Redis
+├── repositories/    # DB layer: Unit of Work + CRUD
+├── entrypoints/     # FastAPI routes and ARQ workers
+└── schemas/         # Pydantic I/O validation
+```
+
+The domain sits at the center. Everything else points toward it, nothing leaks outward.
+
+---
+
+## Running Tests
+
+Unit tests use in-memory fakes and dummies — no real services or database needed.
+
+I have managed to write **87** unit tests covering services, adapters, and repositories.
 
 ```bash
-# Environment setup
-cp .env.example .env # fill the env values with example values
-
-# Run with Docker
-docker compose up -d
-# or if not enough gpu resources
-# docker compose -f dummy-compose.yml up -d
-
-# API docs
-open http://localhost:8000/docs
+pytest . -m ""
 ```
 
 ---
 
-## Sample Output
+## Quick Start
 
-This mug of mine was interpolated by one of my ComfyUI workflows, and placed it in this beautiful background.
+If you just want it running, this gets you there in under two minutes.
 
-<p align="center">
-<img src="resources/images/reference_cup.png" alt="Generated via ComfyUI" width="400" height="400"/>
-</p>
+**1. Copy and configure the env file**
+
+```bash
+cp .env.example .env
+```
+
+**2. Start with Docker Compose**
+
+```bash
+make dummy-watch
+```
+
+**3. Open the docs**
+
+```
+http://localhost:8000/docs
+```
+
+**4. Seed dummy data**
+
+Hit the `/api/admin/setup-dummy-data` endpoint. This creates a test user:
+
+```
+email:    user@example.com
+password: password123
+```
+
+**5. Login before hitting protected endpoints** — the `/api/auth/login` route returns your token.
 
 ---
+
+## Contributing
+
+PRs are welcome. For anything beyond a small fix, open an issue first so we're aligned before you invest the time.
+
+---
+
+## License
+
+[MIT](LICENSE)
